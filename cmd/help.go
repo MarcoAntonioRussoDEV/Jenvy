@@ -1,0 +1,49 @@
+package cmd
+
+import (
+	"fmt"
+	"jvm/ui"
+)
+
+func ShowHelp() {
+	ui.ShowBanner()
+	fmt.Println("Java Version Manager helps you explore available OpenJDK releases across providers.")
+	fmt.Println("It selects one recommended version per major tag (e.g., 8, 11, 17...) using the following priority:")
+	fmt.Println(" ✅ LTS availability (Long-Term Support)")
+	fmt.Println(" 📈 Most-used or popular release")
+	fmt.Println(" 🆕 Latest patch version")
+	fmt.Println("")
+
+	fmt.Println("🔧 AVAILABLE COMMANDS:")
+	fmt.Println("─────────────────────")
+	fmt.Println("  jvm remote-list (rl)                   # Show recommended versions (default: Adoptium)")
+	fmt.Println("  jvm remote-list --provider=azul        # Specify provider (adoptium|azul|liberica|private)")
+	fmt.Println("  jvm remote-list --all                  # Show versions from all providers")
+	fmt.Println("  jvm remote-list --latest               # Show only the latest version")
+	fmt.Println("  jvm remote-list --major-only           # Show only major releases (e.g. 17.0.0)")
+	fmt.Println("  jvm remote-list --jdk=17               # Filter only a specific version")
+	fmt.Println("  jvm remote-list --lts-only             # Show only LTS versions")
+	fmt.Println("")
+	fmt.Println("� JDK DOWNLOAD:")
+	fmt.Println("────────────────")
+	fmt.Println("  jvm download (dl) <version>            # Download JDK version to ~/.jvm/versions")
+	fmt.Println("  jvm download 17 --provider=adoptium    # Download from specific provider")
+	fmt.Println("  jvm download 21 --output=./my-jdks     # Download to custom directory")
+	fmt.Println("")
+	fmt.Println("�🔒 PRIVATE REPOSITORY CONFIGURATION:")
+	fmt.Println("───────────────────────────────────")
+	fmt.Println("  jvm configure-private (cp) <endpoint> [token]  # Configure enterprise repository")
+	fmt.Println("  jvm config-show (cs)                           # Show current configuration")
+	fmt.Println("  jvm config-reset (cr)                          # Remove private configuration")
+	fmt.Println("")
+	fmt.Println("ℹ️  HELP:")
+	fmt.Println("─────────")
+	fmt.Println("  jvm --help, -h, help                   # Show this help message")
+	fmt.Println("")
+	fmt.Println("🚀 PRACTICAL EXAMPLES:")
+	fmt.Println("──────────────────────")
+	fmt.Println("  jvm rl --provider=azul --jdk=21")
+	fmt.Println("  jvm remote-list --all --lts-only")
+	fmt.Println("  jvm cp https://nexus.company.com/api/jdk token123")
+	fmt.Println("  jvm cs")
+}

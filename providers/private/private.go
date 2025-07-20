@@ -34,14 +34,14 @@ type RecommendedEntry struct {
 func GetPrivateJDKs() ([]PrivateRelease, error) {
 	cfg, err := utils.LoadConfig()
 	if err != nil || cfg.PrivateEndpoint == "" {
-		return nil, errors.New("⚠️ Endpoint privato non configurato. Verifica ~/.jvm/config.json")
+		return nil, errors.New("⚠️ Private endpoint not configured. Check ~/.jvm/config.json")
 	}
 
 	endpoint := cfg.PrivateEndpoint
 	token := cfg.PrivateToken
 
 	if endpoint == "" {
-		return nil, errors.New("⚠️ Variabile ENV JVM_PRIVATE_ENDPOINT non impostata")
+		return nil, errors.New("⚠️ JVM_PRIVATE_ENDPOINT environment variable not set")
 	}
 
 	req, _ := http.NewRequest("GET", endpoint, nil)
@@ -52,12 +52,12 @@ func GetPrivateJDKs() ([]PrivateRelease, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Errore di rete: %v", err)
+		return nil, fmt.Errorf("Network error: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("❌ Server ha risposto con status %d", resp.StatusCode)
+		return nil, fmt.Errorf("❌ Server responded with status %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -68,7 +68,7 @@ func GetPrivateJDKs() ([]PrivateRelease, error) {
 	var list []PrivateRelease
 	err = json.Unmarshal(body, &list)
 	if err != nil {
-		return nil, fmt.Errorf("Errore nel parsing JSON: %v", err)
+		return nil, fmt.Errorf("JSON parsing error: %v", err)
 	}
 	return list, nil
 }

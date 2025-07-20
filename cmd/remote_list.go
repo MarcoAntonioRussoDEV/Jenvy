@@ -16,17 +16,17 @@ import (
 func RemoteList(defaultProvider string) {
 	// 👇 Usa il valore ricevuto da main.go come default
 	provider := flag.String("provider", defaultProvider, "provider: adoptium | azul | liberica | private")
-	all := flag.Bool("all", false, "Mostra versioni da tutti i provider")
-	majorOnly := flag.Bool("major-only", false, "Mostra solo le major release")
-	latestOnly := flag.Bool("latest", false, "Mostra solo la versione più recente")
-	jdkFilter := flag.Int("jdk", 0, "Filtra solo una versione JDK (es. --jdk=17)")
-	ltsOnly := flag.Bool("lts-only", false, "Mostra solo versioni LTS")
+	all := flag.Bool("all", false, "Show versions from all providers")
+	majorOnly := flag.Bool("major-only", false, "Show only major releases")
+	latestOnly := flag.Bool("latest", false, "Show only the latest version")
+	jdkFilter := flag.Int("jdk", 0, "Filter only one JDK version (e.g. --jdk=17)")
+	ltsOnly := flag.Bool("lts-only", false, "Show only LTS versions")
 	flag.CommandLine.Parse(os.Args[2:])
 
 	defaultMode := !*all && !*majorOnly && !*latestOnly && *jdkFilter == 0 && !*ltsOnly
 
 	if *all && defaultMode {
-		fmt.Println("🧠 Selezione filtrata con versione raccomandata per ciascun provider\n")
+		fmt.Println("🧠 Smart selection with recommended version for each provider\n")
 		printRecommendedAdoptium()
 		printRecommendedAzul()
 		printRecommendedLiberica()
@@ -34,7 +34,7 @@ func RemoteList(defaultProvider string) {
 	}
 
 	if defaultMode {
-		fmt.Println("🧠 Selezione filtrata con versione raccomandata per provider:", *provider, "\n")
+		fmt.Println("🧠 Smart selection with recommended version for provider:", *provider, "\n")
 		switch strings.ToLower(*provider) {
 		case "adoptium":
 			printRecommendedAdoptium()
@@ -45,13 +45,13 @@ func RemoteList(defaultProvider string) {
 		case "private":
 			printRecommendedPrivate()
 		default:
-			fmt.Printf("❌ Provider '%s' non valido. Usa --provider=adoptium | azul | liberica | private\n", *provider)
+			fmt.Printf("❌ Invalid provider '%s'. Use --provider=adoptium | azul | liberica | private\n", *provider)
 		}
 		return
 	}
 
 	if *all {
-		fmt.Println("🧭 Recupero JDK da tutti i provider...\n")
+		fmt.Println("🧭 Fetching JDKs from all providers...\n")
 		printAdoptium(*majorOnly, *latestOnly, *jdkFilter, *ltsOnly)
 		printAzul(*majorOnly, *latestOnly, *jdkFilter, *ltsOnly)
 		printLiberica(*majorOnly, *latestOnly, *jdkFilter, *ltsOnly)
@@ -68,15 +68,15 @@ func RemoteList(defaultProvider string) {
 	case "private":
 		printPrivate(*majorOnly, *latestOnly, *jdkFilter, *ltsOnly)
 	default:
-		fmt.Printf("❌ Provider '%s' non valido. Usa --provider=adoptium | azul | liberica | private\n", *provider)
+		fmt.Printf("❌ Invalid provider '%s'. Use --provider=adoptium | azul | liberica | private\n", *provider)
 	}
 }
 
 func printRecommendedAdoptium() {
-	fmt.Println("🔄 Recupero dati da Adoptium...")
+	fmt.Println("🔄 Fetching data from Adoptium...")
 	list, err := adoptium.GetAllJDKs()
 	if err != nil {
-		fmt.Println("❌ Errore Adoptium:", err)
+		fmt.Println("❌ Adoptium error:", err)
 		return
 	}
 	fmt.Println("🟢 Adoptium")
@@ -85,14 +85,14 @@ func printRecommendedAdoptium() {
 	for _, j := range recommended {
 		data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.Link})
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printRecommendedAzul() {
-	fmt.Println("🔄 Recupero dati da Azul...")
+	fmt.Println("🔄 Fetching data from Azul...")
 	list, err := azul.GetAzulJDKs()
 	if err != nil {
-		fmt.Println("❌ Errore Azul:", err)
+		fmt.Println("❌ Azul error:", err)
 		return
 	}
 	fmt.Println("🔵 Azul")
@@ -101,14 +101,14 @@ func printRecommendedAzul() {
 	for _, j := range recommended {
 		data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.DownloadURL})
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printRecommendedLiberica() {
-	fmt.Println("🔄 Recupero dati da Liberica...")
+	fmt.Println("🔄 Fetching data from Liberica...")
 	list, err := liberica.GetLibericaJDKs()
 	if err != nil {
-		fmt.Println("❌ Errore Liberica:", err)
+		fmt.Println("❌ Liberica error:", err)
 		return
 	}
 	fmt.Println("🟣 Liberica")
@@ -117,14 +117,14 @@ func printRecommendedLiberica() {
 	for _, j := range recommended {
 		data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.DownloadURL})
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printRecommendedPrivate() {
-	fmt.Println("🔄 Recupero dati dal repository privato...")
+	fmt.Println("🔄 Fetching data from private repository...")
 	list, err := private.GetPrivateJDKs()
 	if err != nil {
-		fmt.Println("❌ Errore Private:", err)
+		fmt.Println("❌ Private error:", err)
 		return
 	}
 	fmt.Println("🔒 Private")
@@ -133,13 +133,13 @@ func printRecommendedPrivate() {
 	for _, j := range recommended {
 		data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.DownloadURL})
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printAdoptium(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 	list, err := adoptium.GetAllJDKs()
 	if err != nil {
-		fmt.Println("Errore nel recupero da Adoptium:", err)
+		fmt.Println("Error fetching from Adoptium:", err)
 		return
 	}
 
@@ -155,7 +155,7 @@ func printAdoptium(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			}
 			data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.Link})
 		}
-		utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+		utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 		return
 	}
 
@@ -184,13 +184,13 @@ func printAdoptium(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			})
 		}
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printAzul(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 	list, err := azul.GetAzulJDKs()
 	if err != nil {
-		fmt.Println("Errore nel recupero da Azul:", err)
+		fmt.Println("Error fetching from Azul:", err)
 		return
 	}
 
@@ -206,7 +206,7 @@ func printAzul(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			}
 			data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.DownloadURL})
 		}
-		utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+		utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 		return
 	}
 
@@ -238,13 +238,13 @@ func printAzul(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			j.DownloadURL,
 		})
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printLiberica(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 	list, err := liberica.GetLibericaJDKs()
 	if err != nil {
-		fmt.Println("Errore nel recupero da Liberica:", err)
+		fmt.Println("Error fetching from Liberica:", err)
 		return
 	}
 
@@ -260,7 +260,7 @@ func printLiberica(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			}
 			data = append(data, []string{j.Version, j.OS, j.Arch, j.LTS, j.DownloadURL})
 		}
-		utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+		utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 		return
 	}
 
@@ -285,13 +285,13 @@ func printLiberica(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			j.DownloadURL,
 		})
 	}
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }
 
 func printPrivate(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 	list, err := private.GetPrivateJDKs()
 	if err != nil {
-		fmt.Println("❌ Errore Private:", err)
+		fmt.Println("❌ Private error:", err)
 		return
 	}
 
@@ -322,7 +322,7 @@ func printPrivate(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 			})
 		}
 		fmt.Println("🔒 Private")
-		utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+		utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 		return
 	}
 
@@ -347,5 +347,5 @@ func printPrivate(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 	}
 
 	fmt.Println("🔒 Private")
-	utils.PrintTable(data, []string{"Versione", "OS", "Arch", "LTS", "Download"})
+	utils.PrintTable(data, []string{"Version", "OS", "Arch", "LTS", "Download"})
 }

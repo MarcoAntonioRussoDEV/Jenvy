@@ -1,6 +1,33 @@
 # ☕ Java Version Manager (JVM)
 
-Una CLI elegante per esplorare, filtrare e gestire versioni di OpenJDK da provider pubblici e repository privati — con interfaccia grafica testuale e comportamento smart.
+Un manager cross-platform per JDK multiple su provider pubblici e privati.
+
+## 🔧 Esempi d'uso
+
+```bash
+# Comandi completi
+jvm remote-list                    # selezione smart per Adoptium
+jvm remote-list --provider=azul   # provider alternativo
+jvm remote-list --all             # mostra versioni da tutti i provider
+jvm remote-list --provider=private  # fetch repository aziendale
+
+jvm configure-private <URL> <TOKEN>  # crea configurazione privata
+jvm config-show                     # visualizza configurazione
+jvm config-reset                    # rimuovi configurazione
+
+# Comandi abbreviati (più veloci)
+jvm rl                            # equivalente a remote-list
+jvm rl --provider=azul --jdk=21   # remote-list con parametri
+jvm cp <URL> <TOKEN>              # configure-private
+jvm cs                            # config-show
+jvm cr                            # config-reset
+
+# Help
+jvm --help                        # mostra tutti i comandi disponibili
+jvm -h                            # alias per --help
+```
+
+Manager intelligente per esplorare, filtrare e gestire versioni di OpenJDK da provider pubblici e repository privati — con interfaccia grafica testuale e comportamento smart.
 
 ---
 
@@ -17,8 +44,8 @@ Una CLI elegante per esplorare, filtrare e gestire versioni di OpenJDK da provid
     -   Via variabili d’ambiente `JVM_PRIVATE_ENDPOINT` e `JVM_PRIVATE_TOKEN`
 -   📦 Comandi ausiliari:
     -   `configure-private`: genera `config.json`
-    -   `show-config`: visualizza configurazione attuale
-    -   `reset-config`: cancella configurazione privata
+    -   `config-show`: visualizza configurazione attuale
+    -   `config-reset`: cancella configurazione privata
 
 ---
 
@@ -41,8 +68,8 @@ jvm remote-list --all             # mostra versioni da tutti i provider
 jvm remote-list --provider=private  # fetch repository aziendale
 
 jvm configure-private <URL> <TOKEN>  # crea configurazione privata
-jvm show-config
-jvm reset-config
+jvm config-show
+jvm config-reset
 ```
 
 ---
@@ -63,7 +90,7 @@ jvm reset-config
 
 # 📦 Build automatizzato
 
-Usa build.bat per:
+Usa build.bat (Windows CMD) o build.sh (Bash) per:
 
 -   ✅ Compilare jvm.exe in distribution/
 
@@ -73,9 +100,24 @@ Usa build.bat per:
 
 Esegui dalla root del progetto:
 
-```bat
+```bash
+# Per CMD/PowerShell
 build.bat
+
+# Per Bash (Git Bash, WSL, etc.)
+./build.sh
 ```
+
+### ⚠️ Risoluzione problemi di build
+
+Se ricevi errore **"EndUpdateResource failed (110)"** o **"Il file è utilizzato da un altro processo"**:
+
+1. **Chiudi VS Code** completamente
+2. **Chiudi tutti i terminali** aperti nella cartella del progetto
+3. **Attendi 10 secondi** e riprova il build
+4. Se il problema persiste, **riavvia il sistema**
+
+Questo errore si verifica quando Windows mantiene un handle sui file appena compilati.
 
 🧠 Priorità selezione versioni
 ✅ Versione LTS
@@ -96,8 +138,3 @@ Certificato autofirmato .pfx (facoltativo)
 🖋️ Creato da Marco Antonio Russo — powered by JVM CLI 💎
 
 ### NOTE
-
-semplificare anche l’interfaccia Entry, tipo pubblico riutilizzabile per tutti i provider. Così lo standard diventa universale 🧩💼
-
-non imposta variabile globale jvm
-aggiungi repository privata nell'installer

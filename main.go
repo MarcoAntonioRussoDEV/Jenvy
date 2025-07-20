@@ -5,19 +5,12 @@ import (
 	"os"
 
 	"jvm/cmd"
-	"jvm/ui"
 	"jvm/utils"
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		ui.ShowBanner()
-		fmt.Println("Java Version Manager helps you explore available OpenJDK releases across providers.")
-		fmt.Println("It selects one recommended version per major tag (e.g., 8, 11, 17...) using the following priority:")
-		fmt.Println(" ✅ LTS availability (Long-Term Support)")
-		fmt.Println(" 📈 Most-used or popular release")
-		fmt.Println(" 🆕 Latest patch version\n")
-		fmt.Println("❗ Missing subcommand. Use: jvm remote-list [--provider] [--all]")
+		cmd.ShowHelp()
 		return
 	}
 
@@ -25,12 +18,16 @@ func main() {
 	provider := utils.DefaultProvider()
 
 	switch os.Args[1] {
-	case "remote-list":
+	case "remote-list", "rl":
 		cmd.RemoteList(provider)
 
-	case "configure-private":
+	case "download", "dl":
+		cmd.DownloadJDK(provider)
+
+	case "configure-private", "cp":
 		if len(os.Args) < 3 {
-			fmt.Println("❗ Usa: jvm configure-private <endpoint> [token]")
+			fmt.Println("❗ Usage: jvm configure-private <endpoint> [token]")
+			fmt.Println("❗ Short form: jvm cp <endpoint> [token]")
 			return
 		}
 		endpoint := os.Args[2]
@@ -40,13 +37,17 @@ func main() {
 		}
 		cmd.ConfigurePrivateRepo(endpoint, token)
 
-	case "show-config":
+	case "config-show", "cs":
 		cmd.ShowCurrentConfig()
 
-	case "reset-config":
+	case "config-reset", "cr":
 		cmd.ResetConfigFile()
 
+	case "--help", "-h", "help":
+		cmd.ShowHelp()
+
 	default:
-		fmt.Printf("❌ Comando sconosciuto: %s\n", os.Args[1])
+		fmt.Printf("❌ Unknown command: %s\n", os.Args[1])
+		fmt.Println("💡 Use 'jvm --help' to see all available commands")
 	}
 }
