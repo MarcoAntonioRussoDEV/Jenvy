@@ -1,0 +1,30 @@
+[
+    {
+        "version": "11.0.21",
+        "download": "https://localhost/private-jdk/openjdk-11.0.21.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": true
+    },
+    {
+        "version": "17.0.15",
+        "download": "https://localhost/private-jdk/openjdk-17.0.15.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": true
+    },
+    {
+        "version": "21.0.7",
+        "download": "https://localhost/private-jdk/openjdk-21.0.7.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": true
+    },
+    {
+        "version": "22.0.2",
+        "download": "https://localhost/private-jdk/openjdk-22.0.2.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": false
+    }
+]
