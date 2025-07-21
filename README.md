@@ -1,6 +1,24 @@
 # ☕ Java Version Manager (JVM)
 
-Un manager cross-platform per JDK multiple su provider pubblici e privati.
+U## 🚀 Funzionalità principali
+
+-   🔍 Elenco JDK da **Adoptium**, **Azul**, **Liberica** e **repository privati**
+-   📦 **Download e gestione JDK** con organizzazione automatica in cartelle
+-   📋 **Lista versioni installate** con dettagli su dimensioni e stato
+-   🧠 Selezione intelligente di una versione per tag (LTS → usata → patch)
+-   📊 Visualizzazione tabellare con info su OS, Architettura, link di download
+-   ⚡ **Autocompletamento bash** con Tab per tutti i comandi e opzioni
+-   🔧 **Strumenti di sistema** per pulizia PATH e manutenzione
+-   📄 Banner Figlet all'avvio + spiegazione del comportamento
+-   🎛️ Supporto a flag avanzati:
+    -   `--provider`, `--all`, `--major-only`, `--latest`, `--jdk`, `--lts-only`
+-   🛡️ Supporto a repository privati con configurazione:
+    -   Via `~/.jvm/config.json`
+    -   Via variabili d'ambiente `JVM_PRIVATE_ENDPOINT` e `JVM_PRIVATE_TOKEN`
+-   📦 Comandi ausiliari:
+    -   `configure-private`: genera `config.json`
+    -   `config-show`: visualizza configurazione attuale
+    -   `config-reset`: cancella configurazione privata-platform per JDK multiple su provider pubblici e privati.
 
 ## 🔧 Esempi d'uso
 
@@ -138,3 +156,6 @@ Certificato autofirmato .pfx (facoltativo)
 🖋️ Creato da Marco Antonio Russo — powered by JVM CLI 💎
 
 ### NOTE
+
+-   Installer rotto
+-   pulizia path variables

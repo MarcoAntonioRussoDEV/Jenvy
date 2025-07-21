@@ -197,11 +197,22 @@ func DownloadJDK(defaultProvider string) {
 		filename = fmt.Sprintf("openjdk-%s.tar.gz", version)
 	}
 
-	outputPath := filepath.Join(outputDir, filename)
+	// Create a version-specific subdirectory
+	versionDir := fmt.Sprintf("JDK-%s", foundVersion)
+	versionOutputDir := filepath.Join(outputDir, versionDir)
+
+	// Create version-specific directory
+	if err := os.MkdirAll(versionOutputDir, 0755); err != nil {
+		fmt.Printf("❌ Failed to create version directory: %v\n", err)
+		return
+	}
+
+	outputPath := filepath.Join(versionOutputDir, filename)
 
 	fmt.Printf("📦 Found JDK %s\n", foundVersion)
 	fmt.Printf("🔗 Download URL: %s\n", downloadURL)
-	fmt.Printf("💾 Saving to: %s\n", outputPath)
+	fmt.Printf("� Version directory: %s\n", versionOutputDir)
+	fmt.Printf("�💾 Saving to: %s\n", outputPath)
 
 	// Check if file already exists
 	if _, err := os.Stat(outputPath); err == nil {
@@ -228,13 +239,20 @@ func DownloadJDK(defaultProvider string) {
 	}
 
 	fmt.Printf("✅ Download completed successfully!\n")
-	fmt.Printf("📁 File saved to: %s\n", outputPath)
+	fmt.Printf("📁 JDK %s saved to: %s\n", foundVersion, versionOutputDir)
+	fmt.Printf("📄 Archive file: %s\n", filename)
 
 	// Show file info
 	if fileInfo, err := os.Stat(outputPath); err == nil {
 		fmt.Printf("📏 File size: %.2f MB\n", float64(fileInfo.Size())/1024/1024)
 		fmt.Printf("🕒 Download time: %s\n", time.Now().Format("15:04:05"))
 	}
+
+	fmt.Println()
+	fmt.Println("💡 Next steps:")
+	fmt.Printf("   jvm list                   # View downloaded JDKs\n")
+	fmt.Printf("   jvm extract %s            # Extract the archive (coming soon)\n", foundVersion)
+	fmt.Printf("   jvm use %s                # Set as active JDK (coming soon)\n", foundVersion)
 }
 
 // downloadFile downloads a file from URL to the specified path with progress indication

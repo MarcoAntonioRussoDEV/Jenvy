@@ -24,6 +24,19 @@ func main() {
 	case "download", "dl":
 		cmd.DownloadJDK(provider)
 
+	case "list", "l":
+		cmd.ListInstalledJDKs()
+
+	case "completion":
+		if len(os.Args) > 2 && os.Args[2] == "install" {
+			cmd.InstallCompletion()
+		} else {
+			cmd.GenerateCompletion()
+		}
+
+	case "fix-path", "fp":
+		cmd.FixPath()
+
 	case "configure-private", "cp":
 		if len(os.Args) < 3 {
 			fmt.Println("❗ Usage: jvm configure-private <endpoint> [token]")

@@ -7,28 +7,28 @@ DisableProgramGroupPage=yes
 OutputBaseFilename=jvm-installer
 OutputDir=distribution
 ChangesEnvironment=yes
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
 
 SetupIconFile=distribution\jvm.ico
 WizardImageFile=distribution\jvm_splash.bmp
 WizardSmallImageFile=distribution\jvm_splash_small.bmp
 
-; Parametri riga di comando
-; /CONFIGURE_PRIVATE=1  - Abilita configurazione repository privato
-; /CONFIGURE_PRIVATE=0  - Salta configurazione repository privato
+; Command line parameters
+; /CONFIGURE_PRIVATE=1  - Enable private repository configuration
+; /CONFIGURE_PRIVATE=0  - Skip private repository configuration
 
 [Files]
 Source: "distribution\jvm.exe";               DestDir: "{app}"; Flags: ignoreversion
 Source: "distribution\README.txt";            DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
-Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "PATH"; ValueData: "{olddata};{app}"; Check: NeedsAddPath('{app}')
+; PATH viene gestito nella sezione [Code] per un controllo più preciso
 
 [Tasks]
-Name: "addtopath"; Description: "Aggiungi JVM al PATH di sistema"; GroupDescription: "Configurazione aggiuntiva:"
+Name: "addtopath"; Description: "Add JVM to system PATH"; GroupDescription: "Additional configuration:"
 
 [Run]
-Filename: "notepad.exe"; Parameters: """{app}\README.txt"""; Description: "📘 Leggi il README"; Flags: postinstall shellexec
+Filename: "notepad.exe"; Parameters: """{app}\README.txt"""; Description: "📘 Open README"; Flags: postinstall shellexec unchecked
 
 
 [Code]
@@ -37,41 +37,69 @@ var
   WelcomePage: TOutputMsgWizardPage;
   ConfigurePrivate: Boolean;
 
+// Forward declarations
+procedure CleanupPATH(); forward;
+function NeedsAddPath(Param: string): Boolean; forward;
+
 procedure InitializeWizard;
+var
+  ExistingInstallPath: string;
+  ResultCode: Integer;
 begin
-  // Controlla se configurare repository privato (default: True)
+  // Check if configuring private repository (default: True)
   ConfigurePrivate := StrToIntDef(ExpandConstant('{param:CONFIGURE_PRIVATE|1}'), 1) = 1;
   
-  // Pagina di presentazione iniziale
+  // Check for existing JVM installation
+  if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Java Version Manager_is1', 'InstallLocation', ExistingInstallPath) or
+     RegQueryStringValue(HKCU, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Java Version Manager_is1', 'InstallLocation', ExistingInstallPath) then
+  begin
+    if MsgBox('An existing Java Version Manager installation has been detected at:' + #13#10 + 
+              ExistingInstallPath + #13#10#13#10 + 
+              'Do you want to uninstall it first and proceed with a fresh installation?' + #13#10 +
+              '(Recommended to avoid conflicts)', mbConfirmation, MB_YESNO) = IDYES then
+    begin
+      // Try to run uninstaller
+      if FileExists(ExistingInstallPath + '\unins000.exe') then
+      begin
+        if not Exec(ExistingInstallPath + '\unins000.exe', '/SILENT', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+          MsgBox('Could not automatically uninstall the previous version. Please uninstall manually.', mbError, MB_OK);
+      end;
+    end;
+  end;
+  
+  // Initial welcome page
   WelcomePage := CreateOutputMsgPage(
     wpWelcome,
-    '☕ Benvenuto in Java Version Manager',
-    'Un tool elegante per gestire versioni OpenJDK',
-    '🚀 Funzionalità principali:' + #13#10 +
-    '• Elenco JDK da Adoptium, Azul, Liberica' + #13#10 +
-    '• Supporto repository privati aziendali' + #13#10 +
-    '• Selezione intelligente versioni (LTS prioritario)' + #13#10 +
-    '• Interfaccia CLI con tabelle formattate' + #13#10 + #13#10 +
-    '📦 Dopo l''installazione potrai usare il comando "jvm" da qualsiasi terminale.' + #13#10 + #13#10 +
-    '🔧 Esempi d''uso:' + #13#10 +
+    '☕ Welcome to Java Version Manager',
+    'An elegant tool for managing OpenJDK versions',
+    '🚀 Key Features:' + #13#10 +
+    '• List JDK from Adoptium, Azul, Liberica' + #13#10 +
+    '• Support for private enterprise repositories' + #13#10 +
+    '• Smart version selection (LTS priority)' + #13#10 +
+    '• CLI interface with formatted tables' + #13#10 +
+    '• Download and manage JDK versions' + #13#10 + #13#10 +
+    '📦 After installation you can use the "jvm" command from any terminal.' + #13#10 + #13#10 +
+    '🔧 Usage examples:' + #13#10 +
     '  jvm remote-list' + #13#10 +
+    '  jvm download 17' + #13#10 +
+    '  jvm list' + #13#10 +
     '  jvm remote-list --provider=azul' + #13#10 +
     '  jvm remote-list --all'
   );
 
-  // Pagina configurazione repository privato (condizionale)
+  // Private repository configuration page (conditional)
   if ConfigurePrivate then
   begin
     InputPage := CreateInputQueryPage(
       wpSelectDir,
-      '🔒 Configurazione Repository Privato',
-      'Configura l''accesso al tuo repository aziendale',
-      'Questi parametri verranno salvati in %USERPROFILE%\.jvm\config.json' + #13#10 + #13#10 +
-      '⚠️ Puoi lasciare vuoto per configurare successivamente con:' + #13#10 +
+      '🔒 Private Repository Configuration',
+      'Configure access to your enterprise repository',
+      'These parameters will be saved to %USERPROFILE%\.jvm\config.json' + #13#10 + #13#10 +
+      '⚠️ You can leave empty to configure later with:' + #13#10 +
       '   jvm configure-private <endpoint> [token]'
     );
-    InputPage.Add('Endpoint del repository (es. https://nexus.company.com/api/jdk):', False);
-    InputPage.Add('Token di accesso (opzionale):', False);
+    InputPage.Add('Repository endpoint (e.g. https://nexus.company.com/api/jdk):', False);
+    InputPage.Add('Access token (optional):', False);
   end;
 end;
 
@@ -79,27 +107,50 @@ procedure CurStepChanged(CurStep: TSetupStep);
 var
   Endpoint, Token: string;
   ConfigPath, JSON: string;
+  CurrentPath: string;
 begin
-  if (CurStep = ssPostInstall) and ConfigurePrivate then
+  if CurStep = ssPostInstall then
   begin
-    // Legge i valori inseriti solo se la pagina è stata mostrata
-    Endpoint := InputPage.Values[0];
-    Token    := InputPage.Values[1];
-
-    // Se l'utente ha inserito almeno l'endpoint, salva il config
-    if Endpoint <> '' then
+    // Clean PATH from duplicates first
+    CleanupPATH();
+    
+    // Add JVM to PATH if not already present
+    if NeedsAddPath(ExpandConstant('{app}')) then
     begin
-      // Prepara il JSON
-      JSON :=
-        '{' + #13#10 +
-        '  "private_endpoint": "' + Endpoint + '",' + #13#10 +
-        '  "private_token": "'   + Token    + '"'  + #13#10 +
-        '}';
+      if RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'PATH', CurrentPath) then
+      begin
+        if CurrentPath <> '' then
+          CurrentPath := CurrentPath + ';' + ExpandConstant('{app}')
+        else
+          CurrentPath := ExpandConstant('{app}');
+        
+        RegWriteExpandStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'PATH', CurrentPath);
+        Log(Format('Added to SYSTEM PATH: %s', [ExpandConstant('{app}')]));
+      end;
+    end;
+    
+    // Configure private repository if requested
+    if ConfigurePrivate then
+    begin
+      // Read entered values only if page was shown
+      Endpoint := InputPage.Values[0];
+      Token    := InputPage.Values[1];
 
-      // Salva in %USERPROFILE%\.jvm\config.json
-      ConfigPath := ExpandConstant('{%USERPROFILE}\.jvm\config.json');
-      ForceDirectories(ExtractFileDir(ConfigPath));
-      SaveStringToFile(ConfigPath, JSON, False);
+      // If user entered at least the endpoint, save config
+      if Endpoint <> '' then
+      begin
+        // Prepare JSON
+        JSON :=
+          '{' + #13#10 +
+          '  "private_endpoint": "' + Endpoint + '",' + #13#10 +
+          '  "private_token": "'   + Token    + '"'  + #13#10 +
+          '}';
+
+        // Save to %USERPROFILE%\.jvm\config.json
+        ConfigPath := ExpandConstant('{%USERPROFILE}\.jvm\config.json');
+        ForceDirectories(ExtractFileDir(ConfigPath));
+        SaveStringToFile(ConfigPath, JSON, False);
+      end;
     end;
   end;
 end;
@@ -107,12 +158,51 @@ end;
 function NeedsAddPath(Param: string): Boolean;
 var
   OrigPath: string;
+  CleanPath: string;
+  SearchPattern1, SearchPattern2: string;
 begin
-  if not RegQueryStringValue(HKCU, 'Environment', 'PATH', OrigPath) then
+  if not RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'PATH', OrigPath) then
     begin
       Result := True;
       exit;
     end;
-  // Controlla se il percorso è già presente
-  Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
+  
+  // Normalizza il PATH per la ricerca
+  CleanPath := ';' + Uppercase(OrigPath) + ';';
+  
+  // Normalizza anche la directory da cercare
+  SearchPattern1 := ';' + Uppercase(Param) + ';';
+  SearchPattern2 := ';' + Uppercase(Param) + '\;';  // Con backslash finale
+  
+  // Check if path is already present (case insensitive)
+  Result := (Pos(SearchPattern1, CleanPath) = 0) and (Pos(SearchPattern2, CleanPath) = 0);
+  
+  if not Result then
+    Log(Format('PATH already contains: %s', [Param]));
+end;
+
+procedure CleanupPATH();
+var
+  OrigPath, NewPath: string;
+begin
+  if not RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'PATH', OrigPath) then
+    exit;
+    
+  // Simple cleanup: just remove double semicolons
+  NewPath := OrigPath;
+  while Pos(';;', NewPath) > 0 do
+    StringChange(NewPath, ';;', ';');
+  
+  // Remove leading/trailing semicolons
+  while (Length(NewPath) > 0) and (NewPath[1] = ';') do
+    Delete(NewPath, 1, 1);
+  while (Length(NewPath) > 0) and (NewPath[Length(NewPath)] = ';') do
+    Delete(NewPath, Length(NewPath), 1);
+  
+  // Update registry only if changed
+  if NewPath <> OrigPath then
+  begin
+    RegWriteExpandStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'PATH', NewPath);
+    Log('SYSTEM PATH cleaned: removed empty entries');
+  end;
 end;
