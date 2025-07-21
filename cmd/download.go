@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"archive/tar"
+	"archive/zip"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"net/http"
@@ -246,6 +249,45 @@ func DownloadJDK(defaultProvider string) {
 	if fileInfo, err := os.Stat(outputPath); err == nil {
 		fmt.Printf("📏 File size: %.2f MB\n", float64(fileInfo.Size())/1024/1024)
 		fmt.Printf("🕒 Download time: %s\n", time.Now().Format("15:04:05"))
+	}
+
+	// Extract the archive automatically
+	fmt.Printf("\n🗂️ Extracting JDK archive...\n")
+	extractPath := versionOutputDir // Extract directly to version directory
+
+	if err := extractArchive(outputPath, extractPath); err != nil {
+		fmt.Printf("⚠️ Extraction failed: %v\n", err)
+		fmt.Printf("💡 You can manually extract: %s\n", outputPath)
+	} else {
+		fmt.Printf("✅ JDK extracted successfully to: %s\n", extractPath)
+
+		// Try to find the actual JDK root directory and move it to a cleaner path
+		jdkRootDir, err := findJDKRootDir(extractPath)
+		if err == nil {
+			// If we found a nested JDK directory, move its contents up one level
+			if jdkRootDir != extractPath {
+				if err := flattenJDKDirectory(jdkRootDir, extractPath, outputPath); err == nil {
+					fmt.Printf("🎯 JDK ready at: %s\n", extractPath)
+					fmt.Printf("💡 Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
+				} else {
+					fmt.Printf("🎯 JDK ready at: %s\n", jdkRootDir)
+					fmt.Printf("💡 Add to PATH: %s\n", filepath.Join(jdkRootDir, "bin"))
+				}
+			} else {
+				fmt.Printf("🎯 JDK ready at: %s\n", extractPath)
+				fmt.Printf("💡 Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
+			}
+		}
+
+		// Optionally remove the archive file
+		fmt.Printf("\n🗑️ Remove archive file? (y/N): ")
+		var response string
+		fmt.Scanln(&response)
+		if strings.ToLower(strings.TrimSpace(response)) == "y" {
+			if err := os.Remove(outputPath); err == nil {
+				fmt.Printf("🗑️ Archive file removed\n")
+			}
+		}
 	}
 
 	fmt.Println()
@@ -625,4 +667,237 @@ func findPrivateDownload(releases []private.PrivateRelease, version string) (str
 	}
 
 	return url, filename, bestMatch.Version
+}
+
+// extractArchive extracts ZIP or TAR.GZ archives
+func extractArchive(archivePath, destPath string) error {
+	// Ensure destination directory exists
+	if err := os.MkdirAll(destPath, 0755); err != nil {
+		return err
+	}
+
+	ext := strings.ToLower(filepath.Ext(archivePath))
+	if ext == ".zip" {
+		return extractZip(archivePath, destPath)
+	} else if strings.HasSuffix(strings.ToLower(archivePath), ".tar.gz") {
+		return extractTarGz(archivePath, destPath)
+	}
+
+	return fmt.Errorf("unsupported archive format: %s", ext)
+}
+
+// extractZip extracts a ZIP archive
+func extractZip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		// Clean the file path to prevent zip slip attacks
+		cleanPath := filepath.Join(dest, f.Name)
+		if !strings.HasPrefix(cleanPath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			continue
+		}
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(cleanPath, 0755)
+			continue
+		}
+
+		// Create the directories for file
+		if err := os.MkdirAll(filepath.Dir(cleanPath), 0755); err != nil {
+			return err
+		}
+
+		// Extract file
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+
+		outFile, err := os.OpenFile(cleanPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			rc.Close()
+			return err
+		}
+
+		_, err = io.Copy(outFile, rc)
+		outFile.Close()
+		rc.Close()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// extractTarGz extracts a TAR.GZ archive
+func extractTarGz(src, dest string) error {
+	file, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	gzr, err := gzip.NewReader(file)
+	if err != nil {
+		return err
+	}
+	defer gzr.Close()
+
+	tr := tar.NewReader(gzr)
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		// Clean the file path to prevent tar slip attacks
+		cleanPath := filepath.Join(dest, header.Name)
+		if !strings.HasPrefix(cleanPath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			continue
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(cleanPath, 0755); err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			// Create the directories for file
+			if err := os.MkdirAll(filepath.Dir(cleanPath), 0755); err != nil {
+				return err
+			}
+
+			// Extract file
+			outFile, err := os.Create(cleanPath)
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.Copy(outFile, tr); err != nil {
+				outFile.Close()
+				return err
+			}
+
+			outFile.Close()
+
+			// Set file permissions
+			if err := os.Chmod(cleanPath, os.FileMode(header.Mode)); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// findJDKRootDir finds the actual JDK root directory within the extracted path
+func findJDKRootDir(extractPath string) (string, error) {
+	// JDK archives often contain a single root directory like "jdk-17.0.5+8"
+	entries, err := os.ReadDir(extractPath)
+	if err != nil {
+		return extractPath, err
+	}
+
+	// Look for a single directory that might be the JDK root
+	var jdkDir string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			// Check if this directory contains typical JDK structure (bin, lib, etc.)
+			potentialJDKDir := filepath.Join(extractPath, entry.Name())
+			if isJDKDirectory(potentialJDKDir) {
+				jdkDir = potentialJDKDir
+				break
+			}
+		}
+	}
+
+	if jdkDir == "" {
+		// If no JDK-like subdirectory found, check if extractPath itself is a JDK
+		if isJDKDirectory(extractPath) {
+			return extractPath, nil
+		}
+		return extractPath, fmt.Errorf("could not locate JDK root directory")
+	}
+
+	return jdkDir, nil
+}
+
+// isJDKDirectory checks if a directory looks like a JDK installation
+func isJDKDirectory(dir string) bool {
+	// Check for typical JDK directories
+	requiredDirs := []string{"bin", "lib"}
+	for _, reqDir := range requiredDirs {
+		if _, err := os.Stat(filepath.Join(dir, reqDir)); err != nil {
+			return false
+		}
+	}
+
+	// Check for java executable
+	javaExe := "java"
+	if runtime.GOOS == "windows" {
+		javaExe = "java.exe"
+	}
+
+	if _, err := os.Stat(filepath.Join(dir, "bin", javaExe)); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// flattenJDKDirectory moves the contents of a nested JDK directory up to the parent level
+func flattenJDKDirectory(jdkRootDir, targetDir, archivePath string) error {
+	// Create a temporary directory to avoid conflicts
+	tempDir := targetDir + "_temp"
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Move JDK contents to temp directory
+	entries, err := os.ReadDir(jdkRootDir)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		srcPath := filepath.Join(jdkRootDir, entry.Name())
+		destPath := filepath.Join(tempDir, entry.Name())
+
+		if err := os.Rename(srcPath, destPath); err != nil {
+			return fmt.Errorf("failed to move %s: %v", entry.Name(), err)
+		}
+	}
+
+	// Remove the now empty nested directory structure
+	if err := os.RemoveAll(filepath.Join(targetDir, filepath.Base(jdkRootDir))); err != nil {
+		return err
+	}
+
+	// Move contents from temp to target directory
+	tempEntries, err := os.ReadDir(tempDir)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range tempEntries {
+		srcPath := filepath.Join(tempDir, entry.Name())
+		destPath := filepath.Join(targetDir, entry.Name())
+
+		if err := os.Rename(srcPath, destPath); err != nil {
+			return fmt.Errorf("failed to move %s to final location: %v", entry.Name(), err)
+		}
+	}
+
+	return nil
 }
