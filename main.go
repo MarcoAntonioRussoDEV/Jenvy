@@ -24,11 +24,17 @@ func main() {
 	case "download", "dl":
 		cmd.DownloadJDK(provider)
 
+	case "extract", "ex":
+		cmd.ExtractJDK()
+
 	case "list", "l":
 		cmd.ListInstalledJDKs()
 
 	case "use", "u":
 		cmd.UseJDK()
+
+	case "remove", "rm":
+		cmd.RemoveJDK()
 
 	case "completion":
 		if len(os.Args) > 2 {

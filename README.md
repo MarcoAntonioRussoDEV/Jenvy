@@ -1,161 +1,277 @@
-# ☕ Java Version Manager (JVM)
+# Java Version Manager (JVM)
 
-U## 🚀 Funzionalità principali
+**Una soluzione professionale per la gestione centralizzata delle distribuzioni OpenJDK**
 
--   🔍 Elenco JDK da **Adoptium**, **Azul**, **Liberica** e **repository privati**
--   📦 **Download e gestione JDK** con organizzazione automatica in cartelle
--   📋 **Lista versioni installate** con dettagli su dimensioni e stato
--   🧠 Selezione intelligente di una versione per tag (LTS → usata → patch)
--   📊 Visualizzazione tabellare con info su OS, Architettura, link di download
--   ⚡ **Autocompletamento bash** con Tab per tutti i comandi e opzioni
--   🔧 **Strumenti di sistema** per pulizia PATH e manutenzione
--   📄 Banner Figlet all'avvio + spiegazione del comportamento
--   🎛️ Supporto a flag avanzati:
-    -   `--provider`, `--all`, `--major-only`, `--latest`, `--jdk`, `--lts-only`
--   🛡️ Supporto a repository privati con configurazione:
-    -   Via `~/.jvm/config.json`
-    -   Via variabili d'ambiente `JVM_PRIVATE_ENDPOINT` e `JVM_PRIVATE_TOKEN`
--   📦 Comandi ausiliari:
-    -   `configure-private`: genera `config.json`
-    -   `config-show`: visualizza configurazione attuale
-    -   `config-reset`: cancella configurazione privata-platform per JDK multiple su provider pubblici e privati.
+Java Version Manager è un'applicazione a riga di comando progettata per semplificare l'installazione, la gestione e il passaggio tra diverse versioni di OpenJDK su sistemi Windows. Il tool supporta i principali provider pubblici (Adoptium, Azul Zulu, BellSoft Liberica) e repository privati aziendali.
 
-## 🔧 Esempi d'uso
+---
+
+## Funzionalità Principali
+
+### Gestione Multi-Provider
+
+-   **Provider Pubblici**: Integrazione nativa con Adoptium (Eclipse Temurin), Azul Zulu e BellSoft Liberica
+-   **Repository Privati**: Supporto completo per distribuzioni JDK aziendali personalizzate
+-   **Configurazione Flessibile**: Gestione tramite file di configurazione locale o variabili d'ambiente
+
+### Operazioni Core
+
+-   **Esplorazione Remota**: Ricerca e visualizzazione delle versioni JDK disponibili con filtri avanzati
+-   **Download Intelligente**: Scaricamento automatico con rilevamento dell'architettura di sistema
+-   **Estrazione Automatica**: Opzione di estrazione immediata al completamento del download
+-   **Gestione Locale**: Visualizzazione e amministrazione delle versioni JDK installate
+-   **Switching Automatico**: Cambio di versione JDK attiva con elevazione automatica dei privilegi
+
+### Caratteristiche Avanzate
+
+-   **Autocompletamento**: Supporto nativo per Bash, PowerShell e Command Prompt
+-   **Filtri Intelligenti**: Selezione automatica basata su criteri LTS, versioni maggiori e patch più recenti
+-   **Gestione PATH**: Strumenti integrati per la riparazione e manutenzione delle variabili di sistema
+-   **Rimozione Sicura**: Eliminazione controllea con conferme di sicurezza per operazioni distruttive
+
+---
+
+## Installazione
+
+### Distribuzione Windows
+
+1. Scaricare il file `jvm-installer.exe` dalla sezione releases
+2. Eseguire l'installer con privilegi di amministratore
+3. Il comando `jvm` sarà disponibile globalmente in tutti i terminali
+
+### Compilazione da Sorgenti
 
 ```bash
-# Comandi completi
-jvm remote-list                    # selezione smart per Adoptium
-jvm remote-list --provider=azul   # provider alternativo
-jvm remote-list --all             # mostra versioni da tutti i provider
-jvm remote-list --provider=private  # fetch repository aziendale
+# Clonare il repository
+git clone https://github.com/MarcoAntonioRussoDEV/JavaVersionManager.git
+cd JavaVersionManager
 
-jvm configure-private <URL> <TOKEN>  # crea configurazione privata
-jvm config-show                     # visualizza configurazione
-jvm config-reset                    # rimuovi configurazione
+# Compilazione per Windows
+GOOS=windows GOARCH=amd64 go build -o jvm.exe main.go
 
-# Comandi abbreviati (più veloci)
-jvm rl                            # equivalente a remote-list
-jvm rl --provider=azul --jdk=21   # remote-list con parametri
-jvm cp <URL> <TOKEN>              # configure-private
-jvm cs                            # config-show
-jvm cr                            # config-reset
-
-# Help
-jvm --help                        # mostra tutti i comandi disponibili
-jvm -h                            # alias per --help
+# Build completo con installer (richiede Inno Setup)
+./build.bat
 ```
 
-Manager intelligente per esplorare, filtrare e gestire versioni di OpenJDK da provider pubblici e repository privati — con interfaccia grafica testuale e comportamento smart.
-
 ---
 
-## 🚀 Funzionalità principali
+## Guida all'Utilizzo
 
--   🔍 Elenco JDK da **Adoptium**, **Azul**, **Liberica** e **repository privati**
--   🧠 Selezione intelligente di una versione per tag (LTS → usata → patch)
--   📊 Visualizzazione tabellare con info su OS, Architettura, link di download
--   📄 Banner Figlet all’avvio + spiegazione del comportamento
--   🎛️ Supporto a flag avanzati:
-    -   `--provider`, `--all`, `--major-only`, `--latest`, `--jdk`, `--lts-only`
--   🛡️ Supporto a repository privati con configurazione:
-    -   Via `~/.jvm/config.json`
-    -   Via variabili d’ambiente `JVM_PRIVATE_ENDPOINT` e `JVM_PRIVATE_TOKEN`
--   📦 Comandi ausiliari:
-    -   `configure-private`: genera `config.json`
-    -   `config-show`: visualizza configurazione attuale
-    -   `config-reset`: cancella configurazione privata
-
----
-
-## 📦 Installazione
-
-### Windows (.exe globale)
-
-1. Scarica l’installer firmato `jvm-installer.exe`
-2. Esegui come amministratore
-3. Il tool sarà disponibile in qualsiasi terminale come `jvm`
-
----
-
-## 🔧 Esempi d’uso
+### Esplorazione delle Versioni Disponibili
 
 ```bash
-jvm remote-list                    # selezione smart per Adoptium
-jvm remote-list --provider=azul   # provider alternativo
-jvm remote-list --all             # mostra versioni da tutti i provider
-jvm remote-list --provider=private  # fetch repository aziendale
+# Visualizzazione versioni dal provider predefinito (Adoptium)
+jvm remote-list
 
-jvm configure-private <URL> <TOKEN>  # crea configurazione privata
+# Esplorazione di provider specifici
+jvm remote-list --provider=azul
+jvm remote-list --provider=liberica
+jvm remote-list --provider=private
+
+# Filtri avanzati
+jvm remote-list --lts-only          # Solo versioni Long Term Support
+jvm remote-list --major-only        # Solo versioni maggiori
+jvm remote-list --latest            # Solo le versioni più recenti
+jvm remote-list --all               # Tutte le versioni da tutti i provider
+```
+
+### Download e Installazione
+
+```bash
+# Download di una versione specifica
+jvm download 21
+
+# Il sistema richiederà automaticamente se estrarre l'archivio:
+# [?] Do you want to extract the archive now? (Y/n):
+# - Y/y/Enter: Estrazione automatica immediata
+# - n/N: Solo download, estrazione manuale successiva
+
+# Estrazione manuale di archivi già scaricati
+jvm extract JDK-21.0.1+12
+```
+
+### Gestione delle Versioni Installate
+
+```bash
+# Visualizzazione versioni installate
+jvm list
+
+# Attivazione di una versione specifica (richiede privilegi admin)
+jvm use 21
+
+# Configurazione della versione predefinita
+jvm init
+```
+
+### Amministrazione Repository Privati
+
+```bash
+# Configurazione repository aziendale
+jvm configure-private https://repository.company.com/jdk YOUR_TOKEN
+
+# Visualizzazione configurazione corrente
 jvm config-show
+
+# Reset configurazione
 jvm config-reset
 ```
 
----
-
-## 📒 VADEMECUM — Modifiche, Build e Distribuzione
-
-### 🔧 Quando modifichi il codice Go
-
-1. ✅ **Modifica i file** in `cmd/`, `providers/`, `utils/`
-2. 🧪 **Testa la CLI** con:
-    ```bash
-    go run main.go remote-list
-    ```
-3. **Generazione Installer**
-    ```bash
-    GOOS=windows GOARCH=amd64 go build -o distribution/jvm.exe main.go
-    ```
-
-# 📦 Build automatizzato
-
-Usa build.bat (Windows CMD) o build.sh (Bash) per:
-
--   ✅ Compilare jvm.exe in distribution/
-
--   🔐 Firmare con jvm-dev-cert.pfx (autofirmato)
-
--   📦 Compilare installer .exe via Inno Setup
-
-Esegui dalla root del progetto:
+### Rimozione e Manutenzione
 
 ```bash
-# Per CMD/PowerShell
-build.bat
+# Rimozione versione specifica
+jvm remove 17
 
-# Per Bash (Git Bash, WSL, etc.)
-./build.sh
+# Rimozione completa (con conferma di sicurezza)
+jvm remove --all
+
+# Riparazione variabili di sistema
+jvm fix-path
 ```
 
-### ⚠️ Risoluzione problemi di build
+---
 
-Se ricevi errore **"EndUpdateResource failed (110)"** o **"Il file è utilizzato da un altro processo"**:
+## Configurazione Avanzata
 
-1. **Chiudi VS Code** completamente
-2. **Chiudi tutti i terminali** aperti nella cartella del progetto
-3. **Attendi 10 secondi** e riprova il build
-4. Se il problema persiste, **riavvia il sistema**
+### Repository Privati
 
-Questo errore si verifica quando Windows mantiene un handle sui file appena compilati.
+Il sistema supporta due modalità di configurazione per repository privati:
 
-🧠 Priorità selezione versioni
-✅ Versione LTS
+#### File di Configurazione
 
-📈 Versione più usata
+Percorso: `%USERPROFILE%\.jvm\config.json`
 
-🆕 Patch più recente
+```json
+{
+    "private": {
+        "endpoint": "https://repository.company.com/api/jdk",
+        "token": "your-auth-token"
+    }
+}
+```
 
-📎 Requisiti
-Go 1.20+
+#### Variabili d'Ambiente
 
-Inno Setup Compiler
+```bash
+set JVM_PRIVATE_ENDPOINT=https://repository.company.com/api/jdk
+set JVM_PRIVATE_TOKEN=your-auth-token
+```
 
-Windows SDK con signtool.exe
+### Struttura API Repository Privati
 
-Certificato autofirmato .pfx (facoltativo)
+Il sistema richiede che i repository privati espongano un endpoint REST che restituisca un array JSON con le versioni JDK disponibili. L'endpoint deve supportare autenticazione tramite header `Authorization: Bearer <token>`.
 
-🖋️ Creato da Marco Antonio Russo — powered by JVM CLI 💎
+#### Specifica dell'Endpoint
 
-### NOTE
+**URL:** `GET {endpoint}/api/jdk` o endpoint configurato  
+**Headers:** `Authorization: Bearer {token}`  
+**Content-Type:** `application/json`
 
--   Installer rotto
--   pulizia path variables
+#### Formato Risposta JSON
+
+```json
+[
+    {
+        "version": "11.0.21",
+        "download": "https://repository.company.com/private-jdk/openjdk-11.0.21.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": true
+    },
+    {
+        "version": "17.0.15",
+        "download": "https://repository.company.com/private-jdk/openjdk-17.0.15.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": true
+    },
+    {
+        "version": "21.0.7",
+        "download": "https://repository.company.com/private-jdk/openjdk-21.0.7.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": true
+    },
+    {
+        "version": "22.0.2",
+        "download": "https://repository.company.com/private-jdk/openjdk-22.0.2.zip",
+        "os": "windows",
+        "arch": "x64",
+        "lts": false
+    }
+]
+```
+
+#### Campi Obbligatori
+
+| Campo      | Tipo    | Descrizione                                   | Valori Accettati                                         |
+| ---------- | ------- | --------------------------------------------- | -------------------------------------------------------- |
+| `version`  | String  | Versione semantica del JDK                    | Formato: `major.minor.patch` o `major.minor.patch+build` |
+| `download` | String  | URL diretto per il download dell'archivio JDK | URL HTTPS valido                                         |
+| `os`       | String  | Sistema operativo target                      | `windows`, `linux`, `macos`                              |
+| `arch`     | String  | Architettura CPU                              | `x64`, `x32`, `aarch64`                                  |
+| `lts`      | Boolean | Indica se è una versione Long Term Support    | `true`, `false`                                          |
+
+#### Esempio di Implementazione Server
+
+```javascript
+// Esempio endpoint Node.js/Express
+app.get("/api/jdk", authenticateToken, (req, res) => {
+    const jdkVersions = [
+        {
+            version: "11.0.21",
+            download:
+                "https://repository.company.com/private-jdk/openjdk-11.0.21.zip",
+            os: "windows",
+            arch: "x64",
+            lts: true,
+        },
+        // ... altre versioni
+    ];
+
+    res.json(jdkVersions);
+});
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token || !isValidToken(token)) {
+        return res.sendStatus(401);
+    }
+
+    next();
+}
+```
+
+### Autocompletamento
+
+```bash
+# Bash
+jvm completion bash >> ~/.bashrc
+
+# PowerShell
+jvm completion powershell >> $PROFILE
+
+# Command Prompt
+jvm completion cmd
+```
+
+---
+
+## Gestione Privilegi Windows
+
+### Elevazione Automatica UAC
+
+Il comando `jvm use` richiede automaticamente l'elevazione dei privilegi attraverso il dialogo UAC di Windows per:
+
+-   Modificare la variabile di sistema `JAVA_HOME`
+-   Aggiornare la variabile di sistema `PATH`
+-   Garantire la persistenza delle modifiche per tutti gli utenti
+
+**Flusso operativo:**
+
+1. Esecuzione comando `jvm use <version>`
+2. Richiesta automatica elevazione privilegi
+3. Conferma utente tramite dialogo UAC
+4. Applicazione modifiche con privilegi amministrativi

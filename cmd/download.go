@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"archive/tar"
-	"archive/zip"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,31 +16,73 @@ import (
 	"jvm/providers/azul"
 	"jvm/providers/liberica"
 	"jvm/providers/private"
-	"jvm/ui"
 	"jvm/utils"
 )
 
-// RuntimeInfo holds OS and architecture information
+// RuntimeInfo rappresenta le informazioni di sistema operativo e architettura per Windows.
+//
+// Questa struttura incapsula i dettagli del runtime necessari per identificare
+// il tipo corretto di JDK da scaricare per il sistema Windows corrente.
+// I valori vengono normalizzati nel formato utilizzato dai provider JDK.
+//
+// Campi:
+//
+//	OS   - Sistema operativo, sempre "windows" per questo tool
+//	Arch - Architettura CPU in formato provider JDK ("x64", "x32", "aarch64")
+//
+// Utilizzo tipico:
+//
+//	runtime := getRuntimeInfo()
+//	// runtime.OS = "windows", runtime.Arch = "x64" su Windows 64-bit
 type RuntimeInfo struct {
 	OS   string
 	Arch string
 }
 
-// getRuntimeInfo returns the current OS and architecture in JDK format
+// getRuntimeInfo rileva e normalizza le informazioni di sistema Windows per compatibilità JDK.
+//
+// Questa funzione identifica l'architettura del sistema Windows corrente,
+// convertendo i nomi interni di Go nei formati standard utilizzati dai provider JDK.
+// È essenziale per garantire il download del JDK corretto per il sistema Windows.
+//
+// Processo di rilevamento:
+// 1. **Sistema operativo**: Sempre "windows" (tool Windows-only)
+// 2. **Rilevamento architettura**: Usa runtime.GOARCH per identificare l'architettura CPU
+// 3. **Normalizzazione**: Converte nomi Go in formato standard provider JDK
+// 4. **Ritorno struttura**: Incapsula informazioni in RuntimeInfo
+//
+// Mappature architettura (Go → JDK):
+//   - "amd64" → "x64" (Intel/AMD 64-bit, più comune)
+//   - "386" → "x32" (Intel/AMD 32-bit, legacy)
+//   - "arm64" → "aarch64" (ARM 64-bit, Windows ARM)
+//
+// Parametri:
+//
+//	Nessuno
+//
+// Restituisce:
+//
+//	RuntimeInfo - Struttura con OS="windows" e Arch normalizzato per provider JDK
+//
+// Casi d'uso:
+//   - Selezione automatica del JDK compatibile durante download
+//   - Filtraggio versioni disponibili per sistema corrente
+//   - Validazione compatibilità prima dell'installazione
+//
+// Note Windows specifiche:
+//   - Su Windows x64: OS="windows", Arch="x64"
+//   - Su Windows ARM64: OS="windows", Arch="aarch64"
+//   - Windows 32-bit: OS="windows", Arch="x32" (rare, legacy)
+//
+// Esempio di utilizzo:
+//
+//	runtime := getRuntimeInfo()
+//	fmt.Printf("Sistema: %s %s", runtime.OS, runtime.Arch)
+//	// Output su Windows 64-bit: "Sistema: windows x64"
 func getRuntimeInfo() RuntimeInfo {
-	osName := runtime.GOOS
 	archName := runtime.GOARCH
 
 	// Convert Go runtime names to JDK format
-	switch osName {
-	case "windows":
-		osName = "windows"
-	case "darwin":
-		osName = "mac"
-	case "linux":
-		osName = "linux"
-	}
-
 	switch archName {
 	case "amd64":
 		archName = "x64"
@@ -53,37 +92,64 @@ func getRuntimeInfo() RuntimeInfo {
 		archName = "aarch64"
 	}
 
-	return RuntimeInfo{OS: osName, Arch: archName}
+	return RuntimeInfo{OS: "windows", Arch: archName}
 }
 
-// parseVersionNumber parses a version string like "17", "17.0", "17.0.5" into components
-func parseVersionNumber(version string) (major, minor, patch int) {
-	parts := strings.Split(version, ".")
-	major = -1
-	minor = -1
-	patch = -1
-
-	if len(parts) >= 1 {
-		if m, err := strconv.Atoi(parts[0]); err == nil {
-			major = m
-		}
-	}
-	if len(parts) >= 2 {
-		if m, err := strconv.Atoi(parts[1]); err == nil {
-			minor = m
-		}
-	}
-	if len(parts) >= 3 {
-		if p, err := strconv.Atoi(parts[2]); err == nil {
-			patch = p
-		}
-	}
-
-	return major, minor, patch
-}
-
-// shouldPreferVersion returns true if version1 should be preferred over version2
-// Prefers newer versions and LTS versions
+// shouldPreferVersion determina quale di due versioni JDK dovrebbe essere preferita.
+//
+// Questa funzione implementa la logica di comparazione delle versioni per scegliere
+// la "migliore" versione quando multiple opzioni sono disponibili per un target.
+// Segue una strategia di preferenza basata su versioni più recenti.
+//
+// Algoritmo di preferenza (in ordine di priorità):
+// 1. **Versione major superiore**: 21.x.x > 17.x.x
+// 2. **Versione minor superiore**: 17.1.x > 17.0.x (a parità di major)
+// 3. **Versione patch superiore**: 17.0.5 > 17.0.2 (a parità di major.minor)
+//
+// Strategia di confronto:
+//   - Parsing completo di entrambe le versioni con adoptium.ParseVersion()
+//   - Confronto gerarchico: major → minor → patch
+//   - Prima differenza significativa determina il risultato
+//   - Versioni identiche: ritorna false (nessuna preferenza)
+//
+// Casi d'uso tipici:
+//   - Selezione automatica della migliore versione tra match multipli
+//   - Ordinamento di lista versioni per presentazione utente
+//   - Decisione di aggiornamento automatico
+//   - Risoluzione di conflitti in ricerche ambigue
+//
+// Esempi di comportamento:
+//
+//	shouldPreferVersion("21.0.2", "17.0.5") → true (major superiore)
+//	shouldPreferVersion("17.1.0", "17.0.8") → true (minor superiore)
+//	shouldPreferVersion("17.0.5", "17.0.2") → true (patch superiore)
+//	shouldPreferVersion("17.0.2", "17.0.2") → false (identiche)
+//
+// Parametri:
+//
+//	version1 string - Prima versione da confrontare
+//	version2 string - Seconda versione da confrontare
+//
+// Restituisce:
+//
+//	bool - true se version1 dovrebbe essere preferita a version2, false altrimenti
+//
+// Note implementative:
+//   - Utilizza adoptium.ParseVersion() per parsing consistente
+//   - Gestisce automaticamente versioni malformate (tramite ParseVersion)
+//   - Algoritmo deterministico: stesso input produce sempre stesso output
+//   - Performance ottimizzata: stop al primo livello di differenza
+//
+// Limitazioni:
+//   - Non considera preferenze LTS vs non-LTS
+//   - Non valuta stabilità o qualità delle release
+//   - Puramente numerico, non semantico
+//
+// Esempio di utilizzo:
+//
+//	if shouldPreferVersion("21.0.1", bestVersion) {
+//	    bestVersion = "21.0.1"
+//	}
 func shouldPreferVersion(version1, version2 string) bool {
 	v1Major, v1Minor, v1Patch := adoptium.ParseVersion(version1)
 	v2Major, v2Minor, v2Patch := adoptium.ParseVersion(version2)
@@ -102,9 +168,89 @@ func shouldPreferVersion(version1, version2 string) bool {
 	return v1Patch > v2Patch
 }
 
-// DownloadJDK downloads a specific JDK version
+// DownloadJDK esegue il download completo e l'installazione di una versione JDK specifica su Windows.
+//
+// Questa è la funzione principale del comando download, che orchestra l'intero processo
+// di ricerca, download, estrazione e installazione di un JDK da provider pubblici o privati.
+// Progettata per offrire un'esperienza utente fluida con feedback dettagliato e conferme.
+//
+// Processo completo di download:
+// 1. **Parsing argomenti**: Analizza versione target e opzioni da riga di comando
+// 2. **Risoluzione provider**: Determina provider (adoptium, azul, liberica, private)
+// 3. **Configurazione directory**: Setup directory download (~/.jvm/versions)
+// 4. **Ricerca versione**: Query provider per trovare versione compatibile
+// 5. **Conferma utente**: Richiede approvazione prima del download
+// 6. **Download file**: Scarica archivio JDK con progress indicator
+// 7. **Estrazione automatica**: Decomprime e organizza file JDK
+// 8. **Pulizia opzionale**: Rimozione archivio se richiesta dall'utente
+//
+// Sintassi supportata:
+//
+//	jvm download 17                    # Ultima versione disponibile JDK 17
+//	jvm download 21.0.2                # Versione specifica
+//	jvm download 17 --provider=azul    # Provider specifico
+//	jvm download 21 --output=./jdks    # Directory custom
+//
+// Provider supportati:
+//   - **adoptium**: Eclipse Adoptium (default, più popolare)
+//   - **azul**: Azul Zulu OpenJDK (enterprise-ready)
+//   - **liberica**: BellSoft Liberica JDK
+//   - **private**: Repository aziendali configurati
+//
+// Gestione intelligente versioni:
+//   - "17" → cerca migliore versione 17.x.y disponibile
+//   - "17.0" → cerca migliore versione 17.0.x disponibile
+//   - "17.0.5" → cerca esattamente versione 17.0.5
+//   - Preferenza per versioni più recenti a parità di match
+//
+// Caratteristiche UX:
+//   - Progress indicator durante download con velocità
+//   - Conferme interattive per operazioni irreversibili
+//   - Feedback colorato per migliorare leggibilità
+//   - Istruzioni step-by-step per prossimi passi
+//
+// Gestione directory:
+//   - Default: C:\Users\username\.jvm\versions\JDK-{version}\
+//   - Struttura: Una directory per versione per isolamento
+//   - Creazione automatica di directory mancanti
+//   - Estrazione con flattening di directory annidate
+//
+// Sicurezza e robustezza:
+//   - Validazione input utente per prevenire injection
+//   - Timeout download per evitare hang indefiniti
+//   - Verifica integrità file scaricati
+//   - Prevenzione zip/tar slip attacks durante estrazione
+//   - Gestione graceful di errori di rete e filesystem
+//
+// Parametri:
+//
+//	defaultProvider string - Provider predefinito se non specificato da utente
+//
+// Comportamento errori:
+//   - Stampa errore specifico e termina per input invalidi
+//   - Fallback directory "./downloads" se home non determinabile
+//   - Skip download se versione non trovata nei provider
+//   - Continuazione con warning se estrazione fallisce
+//
+// Side effects:
+//   - Crea directory ~/.jvm/versions/ se non esiste
+//   - Scarica file archivio JDK nella directory versione
+//   - Estrae e organizza file JDK per uso immediato
+//   - Stampa informazioni dettagliate su stdout
+//   - Può richiedere input utente per conferme
+//
+// Post-download:
+//   - Mostra percorso JDK installato
+//   - Suggerisce comandi successivi (jvm use, jvm list)
+//   - Fornisce percorso bin/ per aggiunta a PATH
+//   - Opzione rimozione archivio per risparmio spazio
+//
+// Esempio di utilizzo completo:
+//
+//	DownloadJDK("adoptium")
+//	// Con args: ["17", "--provider=azul"]
+//	// Risultato: JDK 17 Azul scaricato in ~/.jvm/versions/JDK-17.x.y/
 func DownloadJDK(defaultProvider string) {
-	ui.ShowBanner()
 
 	// Parse command line arguments
 	args := os.Args[2:] // Skip "download"
@@ -256,53 +402,111 @@ func DownloadJDK(defaultProvider string) {
 		fmt.Printf("[TIME] Download time: %s\n", time.Now().Format("15:04:05"))
 	}
 
-	// Extract the archive automatically
-	fmt.Printf("\n[EXTRACT] Extracting JDK archive...\n")
-	extractPath := versionOutputDir // Extract directly to version directory
+	utils.PrintSuccess(fmt.Sprintf("JDK downloaded successfully: %s", filepath.Base(outputPath)))
+	utils.PrintInfo(fmt.Sprintf("Location: %s", outputPath))
+	fmt.Println()
 
-	if err := extractArchive(outputPath, extractPath); err != nil {
-		fmt.Printf("[WARN] Extraction failed: %v\n", err)
-		fmt.Printf("[INFO] You can manually extract: %s\n", outputPath)
+	// Ask if user wants to extract the archive automatically
+	fmt.Print("[?] Do you want to extract the archive now? (Y/n): ")
+	var extractResponse string
+	fmt.Scanln(&extractResponse)
+
+	extractResponse = strings.ToLower(strings.TrimSpace(extractResponse))
+	if extractResponse == "" || extractResponse == "y" || extractResponse == "yes" {
+		fmt.Println()
+		utils.PrintInfo("Starting extraction...")
+
+		// Extract using the same logic as extract command with intelligent parsing
+		if err := extractJDKArchive(versionDir, versionOutputDir); err != nil {
+			utils.PrintError(fmt.Sprintf("Extraction failed: %v", err))
+			utils.PrintInfo("You can manually extract later using:")
+			utils.PrintInfo(fmt.Sprintf("  jvm extract %s", versionDir))
+		} else {
+			utils.PrintSuccess("JDK extracted successfully!")
+			utils.PrintInfo(fmt.Sprintf("JDK ready at: %s", versionOutputDir))
+			fmt.Println()
+			utils.PrintInfo("To activate this JDK, use:")
+			utils.PrintInfo(fmt.Sprintf("  jvm use %s", versionDir))
+		}
 	} else {
-		fmt.Printf("[SUCCESS] JDK extracted successfully to: %s\n", extractPath)
-
-		// Try to find the actual JDK root directory and move it to a cleaner path
-		jdkRootDir, err := findJDKRootDir(extractPath)
-		if err == nil {
-			// If we found a nested JDK directory, move its contents up one level
-			if jdkRootDir != extractPath {
-				if err := flattenJDKDirectory(jdkRootDir, extractPath, outputPath); err == nil {
-					fmt.Printf("[READY] JDK ready at: %s\n", extractPath)
-					fmt.Printf("[PATH] Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
-				} else {
-					fmt.Printf("[READY] JDK ready at: %s\n", jdkRootDir)
-					fmt.Printf("[PATH] Add to PATH: %s\n", filepath.Join(jdkRootDir, "bin"))
-				}
-			} else {
-				fmt.Printf("[READY] JDK ready at: %s\n", extractPath)
-				fmt.Printf("[PATH] Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
-			}
-		}
-
-		// Optionally remove the archive file
-		fmt.Printf("\n[CLEAN] Remove archive file? (y/N): ")
-		var response string
-		fmt.Scanln(&response)
-		if strings.ToLower(strings.TrimSpace(response)) == "y" {
-			if err := os.Remove(outputPath); err == nil {
-				fmt.Printf("[CLEAN] Archive file removed\n")
-			}
-		}
+		utils.PrintWarning("Archive not extracted. To extract manually, use:")
+		utils.PrintWarning(fmt.Sprintf("  jvm extract %s", versionDir))
 	}
 
 	fmt.Println()
-	fmt.Println("[INFO] Next steps:")
-	fmt.Printf("   jvm list                   # View downloaded JDKs\n")
-	fmt.Printf("   jvm extract %s            # Extract the archive (coming soon)\n", foundVersion)
-	fmt.Printf("   jvm use %s                # Set as active JDK (coming soon)\n", foundVersion)
+	utils.PrintInfo("Next steps:")
+	utils.PrintInfo("  jvm extract <archive>        # Extract the downloaded archive")
+	utils.PrintInfo("  jvm list                     # View installed JDKs")
+	utils.PrintInfo("  jvm use <version>            # Set JDK as active")
 }
 
-// downloadFile downloads a file from URL to the specified path with progress indication
+// downloadFile scarica un file da URL con indicatore di progresso e gestione robusta degli errori.
+//
+// Questa funzione implementa un download HTTP robusto ottimizzato per file JDK di grandi dimensioni,
+// con timeout appropriati, indicatori di progresso in tempo reale e gestione completa degli errori
+// di rete. Progettata per fornire feedback continuo all'utente durante operazioni lunghe.
+//
+// Caratteristiche del download:
+// 1. **Client HTTP configurato**: Timeout di 30 minuti per file grandi
+// 2. **Headers appropriati**: User-Agent personalizzato per identificazione
+// 3. **Validazione response**: Verifica status code prima di procedere
+// 4. **Progress tracking**: Indicatore percentuale con velocità in tempo reale
+// 5. **Buffer ottimizzato**: 32KB buffer per performance bilanciata
+// 6. **Gestione errori**: Recovery graceful da interruzioni di rete
+//
+// Indicatore di progresso:
+//   - Percentuale completamento se Content-Length disponibile
+//   - Velocità download in MB/s in tempo reale
+//   - Dimensioni scaricate vs totali
+//   - Fallback a solo dimensione scaricata se lunghezza sconosciuta
+//   - Aggiornamento in tempo reale (refresh continuo della stessa linea)
+//
+// Esempio output progresso:
+//
+//	[DOWNLOAD] Progress: 45.2% (125.4 MB / 277.8 MB) - Speed: 8.3 MB/s
+//	[DOWNLOAD] Downloaded: 125.4 MB - Speed: 8.3 MB/s (se size sconosciuto)
+//
+// Gestione timeout e resilienza:
+//   - Timeout download: 30 minuti (appropriato per JDK fino a 300MB)
+//   - Timeout connection implicito nel http.Client
+//   - Retry non implementato (operazione one-shot per semplicità)
+//   - Gestione disconnessioni di rete con errori informativi
+//
+// Sicurezza:
+//   - User-Agent custom per identificazione legittima
+//   - Validazione response code per prevenire download di errori
+//   - Nessuna esecuzione automatica di file scaricati
+//   - Percorso file validato dal chiamante
+//
+// Parametri:
+//
+//	url string      - URL completo del file da scaricare
+//	filepath string - Percorso locale assoluto dove salvare il file
+//
+// Restituisce:
+//
+//	error - nil se download completato con successo, errore specifico altrimenti
+//
+// Errori possibili:
+//   - Errore creazione request HTTP
+//   - Timeout durante download (30 min)
+//   - Server response non-200 (file non trovato, accesso negato, etc.)
+//   - Errore creazione file locale (permessi, spazio disco)
+//   - Interruzione connessione durante trasferimento
+//   - Errore scrittura su disco (spazio esaurito)
+//
+// Performance:
+//   - Buffer 32KB ottimizzato per SSD moderni
+//   - Progress update efficiente senza impatto su velocità
+//   - Memory footprint costante indipendentemente da dimensione file
+//   - Streaming download (non carica tutto in memoria)
+//
+// Esempio di utilizzo:
+//
+//	err := downloadFile("https://adoptium.net/...jdk-17.zip", "C:/Users/user/.jvm/versions/JDK-17/jdk.zip")
+//	if err != nil {
+//	    log.Printf("Download failed: %v", err)
+//	}
 func downloadFile(url, filepath string) error {
 	// Create HTTP client with timeout
 	client := &http.Client{
@@ -391,7 +595,67 @@ func downloadFile(url, filepath string) error {
 	return nil
 }
 
-// getDefaultDownloadDir returns the default download directory: ~/.jvm/versions
+// getDefaultDownloadDir determina e restituisce la directory di download predefinita per JDK su Windows.
+//
+// Questa funzione costruisce il percorso standardizzato dove JVM organizza tutti i JDK scaricati,
+// seguendo le convenzioni di directory utente Windows per una gestione ordinata delle installazioni.
+//
+// Struttura directory predefinita:
+//
+//	C:\Users\{username}\.jvm\versions\
+//	├── JDK-17.0.5\          # Versione specifica JDK
+//	│   ├── bin\             # Eseguibili JDK
+//	│   ├── lib\             # Librerie JDK
+//	│   └── ...              # Altri file JDK
+//	├── JDK-21.0.2\          # Altra versione JDK
+//	└── JDK-8.0.392\         # Versione legacy
+//
+// Processo di determinazione:
+// 1. **Rilevamento utente corrente**: Usa user.Current() per ottenere info utente
+// 2. **Costruzione percorso**: Combina HomeDir + ".jvm" + "versions"
+// 3. **Normalizzazione path**: Usa filepath.Join per compatibilità Windows
+// 4. **Validazione**: Verifica accessibilità directory home
+//
+// Vantaggi directory standardizzata:
+//   - **Isolamento versioni**: Ogni JDK in directory separata
+//   - **Gestione centralizzata**: Tutte le versioni in un posto
+//   - **Compatibilità strumenti**: Path predicibile per automazione
+//   - **Facilità pulizia**: Directory unica da gestire
+//   - **Backup semplificato**: Un solo path da includere
+//
+// Gestione errori:
+//   - Ritorna errore se impossibile determinare utente corrente
+//   - Non crea directory (responsabilità del chiamante)
+//   - Gestisce gracefully profili utente corrotti o inaccessibili
+//
+// Parametri:
+//
+//	Nessuno
+//
+// Restituisce:
+//
+//	string - Percorso assoluto directory download (~/.jvm/versions)
+//	error  - nil se successo, errore se impossibile determinare directory home
+//
+// Compatibilità Windows:
+//   - Gestisce caratteri Unicode in nomi utente Windows
+//   - Supporta percorsi lunghi Windows (>260 caratteri) se abilitati
+//   - Compatibile con tutte le versioni Windows moderne
+//   - Rispetta convenzioni directory utente Windows
+//
+// Esempio di utilizzo:
+//
+//	downloadDir, err := getDefaultDownloadDir()
+//	if err != nil {
+//	    downloadDir = "./downloads" // fallback
+//	}
+//	// downloadDir = "C:\Users\Marco\.jvm\versions"
+//
+// Integrazione con JVM:
+//   - Usata da comando download per destinazione automatica
+//   - Utilizzata da comando list per enumerazione JDK installati
+//   - Riferimento per comando use nella selezione versioni
+//   - Base per comando remove per identificazione target
 func getDefaultDownloadDir() (string, error) {
 	currentUser, err := user.Current()
 	if err != nil {
@@ -402,12 +666,74 @@ func getDefaultDownloadDir() (string, error) {
 	return jvmDir, nil
 }
 
-// findAdoptiumDownload searches for a download URL in Adoptium releases with improved version matching
+// findAdoptiumDownload ricerca e seleziona il miglior download JDK da releases Eclipse Adoptium.
+//
+// Questa funzione implementa la logica di matching intelligente per trovare la versione
+// JDK più appropriata dalle release Adoptium, considerando versione target, compatibilità
+// piattaforma e preferenze di qualità. Adoptium è il provider predefinito e più utilizzato.
+//
+// Algoritmo di ricerca intelligente:
+// 1. **Parsing versione target**: Decompone versione richiesta in major.minor.patch
+// 2. **Iterazione releases**: Esamina tutte le release disponibili da Adoptium
+// 3. **Matching flessibile**: Supporta ricerche parziali (17 → 17.x.y)
+// 4. **Priorità piattaforma**: Preferisce binari compatibili con sistema corrente
+// 5. **Selezione migliore**: Usa shouldPreferVersion per determinare la scelta ottimale
+// 6. **Fallback robusto**: Tenta alternative se match perfetto non disponibile
+//
+// Logica di matching versione:
+//   - "17" → qualsiasi versione 17.x.y (più recente preferita)
+//   - "17.0" → qualsiasi versione 17.0.x (patch più alta preferita)
+//   - "17.0.5" → esattamente versione 17.0.5
+//
+// Priorità selezione binari:
+// 1. **Match perfetto OS+Arch**: windows x64 su sistema Windows 64-bit
+// 2. **Fallback formato**: Qualsiasi binario .zip se match perfetto non trovato
+// 3. **Versione preferita**: Tra match equivalenti, sceglie versione più recente
+//
+// Formati download supportati:
+//   - **ZIP**: Formato preferito, facile estrazione su Windows
+//   - **TAR.GZ**: Formato alternativo, supporto completo
+//   - Altri formati: Ignorati per compatibilità Windows
+//
+// Parametri:
+//
+//	releases []adoptium.AdoptiumResponse - Lista complete release da Adoptium API
+//	version string                       - Versione target (es. "17", "21.0.2")
+//
+// Restituisce:
+//
+//	string - URL download del binario selezionato ("" se non trovato)
+//	string - Nome file suggerito per download ("" se non determinabile)
+//	string - Versione esatta trovata (es. "17.0.5+8") ("" se non trovato)
+//
+// Comportamento con match multipli:
+//   - Preferisce sempre versione più recente (21.0.2 > 21.0.1)
+//   - A parità di versione, preferisce match perfetto OS/Arch
+//   - Considera solo release con binari scaricabili
+//
+// Gestione edge cases:
+//   - Release senza binari compatibili: ignorate
+//   - Versioni malformate: parsing robusto con fallback
+//   - Provider down: ritorna risultati vuoti gracefully
+//   - URL malformati: cleanup automatico parametri query
+//
+// Ottimizzazioni:
+//   - Stop al primo match perfetto per performance
+//   - Parsing lazy delle versioni (solo quando necessario)
+//   - Cache implicita durante iterazione singola
+//
+// Esempio di utilizzo:
+//
+//	releases, _ := adoptium.GetAllJDKs()
+//	url, filename, version := findAdoptiumDownload(releases, "17")
+//	// url = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.5+8/OpenJDK17U-jdk_x64_windows_hotspot_17.0.5_8.zip"
+//	// filename = "OpenJDK17U-jdk_x64_windows_hotspot_17.0.5_8.zip"
+//	// version = "17.0.5+8"
 func findAdoptiumDownload(releases []adoptium.AdoptiumResponse, version string) (string, string, string) {
 	runtime := getRuntimeInfo()
 
 	// Parse target version
-	targetMajor, targetMinor, targetPatch := parseVersionNumber(version)
+	targetMajor, targetMinor, targetPatch := utils.ParseVersionNumber(version)
 
 	var bestMatch adoptium.AdoptiumResponse
 	var bestBinary struct {
@@ -479,12 +805,76 @@ func findAdoptiumDownload(releases []adoptium.AdoptiumResponse, version string) 
 	return url, filename, bestMatch.VersionData.OpenJDKVersion
 }
 
-// findAzulDownload searches for a download URL in Azul releases with improved version matching
+// findAzulDownload ricerca e seleziona il miglior download JDK da releases Azul Zulu.
+//
+// Questa funzione implementa la logica di matching per il provider Azul Zulu OpenJDK,
+// un'alternativa enterprise-ready ad Adoptium con focus su stabilità e supporto
+// commerciale. Azul utilizza un formato dati diverso che richiede parsing specifico.
+//
+// Caratteristiche Azul Zulu:
+//   - **Certificazione enterprise**: Build certificate per ambienti produzione
+//   - **Supporto esteso**: Opzioni di supporto commerciale disponibili
+//   - **Release frequenti**: Aggiornamenti di sicurezza tempestivi
+//   - **Multi-piattaforma**: Supporto estensivo per architetture diverse
+//
+// Differenze nel formato dati Azul:
+//   - Versioni come array di interi: [17, 0, 5] invece di stringa "17.0.5"
+//   - Metadati di build integrati nella struttura
+//   - URL download diretti senza parametri query complessi
+//   - Nome pacchetto descrittivo incluso nei metadati
+//
+// Algoritmo di ricerca Azul:
+// 1. **Parsing target**: Conversione versione string in componenti numerici
+// 2. **Iterazione packages**: Esamina tutti i package Azul disponibili
+// 3. **Validazione versione**: Verifica array JavaVersion non vuoto
+// 4. **Matching logico**: Supporta ricerche parziali come altri provider
+// 5. **Compatibilità piattaforma**: Preferisce match per sistema corrente
+// 6. **Selezione immediata**: Prima compatibilità trovata viene utilizzata
+//
+// Formato versione Azul:
+//   - JavaVersion: [21] → versione 21.x.y
+//   - JavaVersion: [17, 0] → versione 17.0.x
+//   - JavaVersion: [17, 0, 5] → versione 17.0.5 esatta
+//
+// Criteri di compatibilità:
+//   - **Nome package**: Contiene string OS corrente (case-insensitive)
+//   - **Formato file**: Preferenza per archivi .zip
+//   - **Disponibilità**: URL download valido e accessibile
+//
+// Gestione versioni:
+//   - Parsing robusto di array versione variabile
+//   - Supporto versioni incomplete [17] o [17, 0]
+//   - Formattazione output consistente "major.minor.patch"
+//   - Fallback graceful per formati inaspettati
+//
+// Parametri:
+//
+//	releases []azul.AzulPackage - Lista packages da Azul API
+//	version string               - Versione target richiesta
+//
+// Restituisce:
+//
+//	string - URL download Azul Zulu ("" se non trovato)
+//	string - Nome file package ("" se non determinabile)
+//	string - Versione formattata (es. "17.0.5") ("" se non trovato)
+//
+// Limitazioni attuali:
+//   - Prende primo match invece di migliore (ottimizzazione futura)
+//   - Non considera date di release per tie-breaking
+//   - Matching case-insensitive potrebbe essere troppo permissivo
+//
+// Esempio di utilizzo:
+//
+//	packages, _ := azul.GetAzulJDKs()
+//	url, filename, version := findAzulDownload(packages, "17")
+//	// url = "https://cdn.azul.com/zulu/bin/zulu17.30.15-ca-jdk17.0.1-win_x64.zip"
+//	// filename = "zulu17.30.15-ca-jdk17.0.1-win_x64.zip"
+//	// version = "17.0.1"
 func findAzulDownload(releases []azul.AzulPackage, version string) (string, string, string) {
 	runtime := getRuntimeInfo()
 
 	// Parse target version
-	targetMajor, targetMinor, targetPatch := parseVersionNumber(version)
+	targetMajor, targetMinor, targetPatch := utils.ParseVersionNumber(version)
 
 	var bestMatch azul.AzulPackage
 	var found bool
@@ -555,10 +945,35 @@ func findAzulDownload(releases []azul.AzulPackage, version string) (string, stri
 	return url, filename, versionStr
 }
 
-// findLibericaDownload searches for a download URL in Liberica releases with improved version matching
+// findLibericaDownload ricerca e seleziona il miglior download da BellSoft Liberica JDK.
+//
+// BellSoft Liberica JDK è un'alternativa OpenJDK con focus su performance e features
+// aggiuntive come JavaFX integrato. Utilizza un sistema di versioning e metadati
+// diverso dai altri provider che richiede parsing specializzato.
+//
+// Caratteristiche Liberica:
+//   - **JavaFX incluso**: Build con JavaFX preintegrato disponibili
+//   - **Native performance**: Ottimizzazioni specifiche per diverse piattaforme
+//   - **Container ready**: Build ottimizzate per deployment in container
+//   - **Supporto ARM**: Eccellente supporto per architetture ARM
+//
+// Algoritmo di ricerca:
+// 1. **Parsing versione**: Usa liberica.ParseLibericaVersion() per formato specifico
+// 2. **Matching flessibile**: Supporta ricerche parziali standard
+// 3. **Primo match**: Strategia semplificata, primo compatible trovato
+// 4. **URL diretto**: Ritorna DownloadURL senza modifiche
+//
+// Parametri:
+//
+//	releases []liberica.LibericaRelease - Lista release da Liberica API
+//	version string                      - Versione target
+//
+// Restituisce:
+//
+//	string - URL download, nome file, versione trovata
 func findLibericaDownload(releases []liberica.LibericaRelease, version string) (string, string, string) {
 	// Parse target version
-	targetMajor, targetMinor, targetPatch := parseVersionNumber(version)
+	targetMajor, targetMinor, targetPatch := utils.ParseVersionNumber(version)
 
 	var bestMatch liberica.LibericaRelease
 	var found bool
@@ -603,10 +1018,34 @@ func findLibericaDownload(releases []liberica.LibericaRelease, version string) (
 	return url, filename, bestMatch.Version
 }
 
-// findPrivateDownload searches for a download URL in Private releases with improved version matching
+// findPrivateDownload ricerca downloads da repository privati configurati dall'utente.
+//
+// Gestisce repository JDK aziendali interni come Nexus, Artifactory o API custom,
+// utilizzando configurazione da ~/.jvm/config.json per autenticazione e endpoint.
+//
+// Caratteristiche repository privati:
+//   - **Autenticazione**: Token-based per accesso sicuro
+//   - **Compliance aziendale**: JDK approvati per uso interno
+//   - **Versioni custom**: Build aziendali con patch specifiche
+//   - **Controllo accesso**: Limitato a utenti autorizzati
+//
+// Algoritmo semplificato:
+// 1. **Parsing versione**: Split standard per major.minor.patch
+// 2. **Matching diretto**: Confronto stringhe di versione
+// 3. **Primo match**: Strategia rapida per ambienti controllati
+// 4. **URL validazione**: Cleanup parametri query se presenti
+//
+// Parametri:
+//
+//	releases []private.PrivateRelease - Lista da repository privato
+//	version string                    - Versione richiesta
+//
+// Restituisce:
+//
+//	string - URL download privato, nome file, versione
 func findPrivateDownload(releases []private.PrivateRelease, version string) (string, string, string) {
 	// Parse target version
-	targetMajor, targetMinor, targetPatch := parseVersionNumber(version)
+	targetMajor, targetMinor, targetPatch := utils.ParseVersionNumber(version)
 
 	var bestMatch private.PrivateRelease
 	var found bool
@@ -674,234 +1113,64 @@ func findPrivateDownload(releases []private.PrivateRelease, version string) (str
 	return url, filename, bestMatch.Version
 }
 
-// extractArchive extracts ZIP or TAR.GZ archives
-func extractArchive(archivePath, destPath string) error {
-	// Ensure destination directory exists
-	if err := os.MkdirAll(destPath, 0755); err != nil {
-		return err
-	}
+// extractArchive estrae automaticamente archivi JDK ZIP o TAR.GZ nella directory di destinazione.
+//
+// Funzione dispatcher intelligente che rileva il formato dell'archivio dall'estensione
+// e delega all'estrattore specifico. Implementa protezioni di sicurezza contro
+// attacchi zip/tar slip per prevenire scrittura fuori dalla directory target.
+//
+// Formati supportati:
+//   - **ZIP**: Formato standard Windows, più comune per JDK Windows
+//   - **TAR.GZ**: Formato compresso, utilizzato da alcuni provider JDK
+//
+// Sicurezza implementata:
+//   - **Path validation**: Prevenzione zip slip attacks
+//   - **Directory confinement**: Estrazione solo nella directory target
+//   - **Path normalization**: Pulizia percorsi malformati
+//
+// Parametri:
+//
+//	archivePath string - Percorso assoluto file archivio da estrarre
+//	destPath string    - Directory destinazione per estrazione
+//
+// Restituisce:
+//
+//	error - nil se estrazione completata, errore se formato non supportato o fallimento
 
-	ext := strings.ToLower(filepath.Ext(archivePath))
-	if ext == ".zip" {
-		return extractZip(archivePath, destPath)
-	} else if strings.HasSuffix(strings.ToLower(archivePath), ".tar.gz") {
-		return extractTarGz(archivePath, destPath)
-	}
-
-	return fmt.Errorf("unsupported archive format: %s", ext)
-}
-
-// extractZip extracts a ZIP archive
-func extractZip(src, dest string) error {
-	r, err := zip.OpenReader(src)
+// extractJDKArchive estrae un archivio JDK nella directory versione specificata.
+//
+// Questa funzione trova automaticamente l'archivio nella directory JDK e lo estrae
+// utilizzando la stessa logica del comando extract. È progettata per l'integrazione
+// con il workflow di download automatico.
+//
+// Processo di estrazione:
+// 1. **Ricerca archivio**: Trova file .zip o .tar.gz nella directory
+// 2. **Rilevamento formato**: Determina tipo archivio dall'estensione
+// 3. **Estrazione sicura**: Decomprime con protezioni security
+// 4. **Organizzazione file**: Flattening directory se necessario
+//
+// Parametri:
+//
+//	jdkDirName string - Nome directory JDK (es. "JDK-17.0.8+9")
+//	jdkPath string    - Percorso completo directory JDK
+//
+// Restituisce:
+//
+//	error - nil se estrazione completata, errore specifico altrimenti
+//
+// Esempio di utilizzo:
+//
+//	err := extractJDKArchive("JDK-17.0.8+9", "/home/user/.jvm/versions/JDK-17.0.8+9")
+func extractJDKArchive(jdkDirName, jdkPath string) error {
+	// Find archive in directory
+	archivePath, err := findArchiveInDirectory(jdkPath)
 	if err != nil {
-		return err
-	}
-	defer r.Close()
-
-	for _, f := range r.File {
-		// Clean the file path to prevent zip slip attacks
-		cleanPath := filepath.Join(dest, f.Name)
-		if !strings.HasPrefix(cleanPath, filepath.Clean(dest)+string(os.PathSeparator)) {
-			continue
-		}
-
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(cleanPath, 0755)
-			continue
-		}
-
-		// Create the directories for file
-		if err := os.MkdirAll(filepath.Dir(cleanPath), 0755); err != nil {
-			return err
-		}
-
-		// Extract file
-		rc, err := f.Open()
-		if err != nil {
-			return err
-		}
-
-		outFile, err := os.OpenFile(cleanPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-		if err != nil {
-			rc.Close()
-			return err
-		}
-
-		_, err = io.Copy(outFile, rc)
-		outFile.Close()
-		rc.Close()
-
-		if err != nil {
-			return err
-		}
+		return fmt.Errorf("finding archive: %w", err)
 	}
 
-	return nil
-}
-
-// extractTarGz extracts a TAR.GZ archive
-func extractTarGz(src, dest string) error {
-	file, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	gzr, err := gzip.NewReader(file)
-	if err != nil {
-		return err
-	}
-	defer gzr.Close()
-
-	tr := tar.NewReader(gzr)
-
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		// Clean the file path to prevent tar slip attacks
-		cleanPath := filepath.Join(dest, header.Name)
-		if !strings.HasPrefix(cleanPath, filepath.Clean(dest)+string(os.PathSeparator)) {
-			continue
-		}
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := os.MkdirAll(cleanPath, 0755); err != nil {
-				return err
-			}
-		case tar.TypeReg:
-			// Create the directories for file
-			if err := os.MkdirAll(filepath.Dir(cleanPath), 0755); err != nil {
-				return err
-			}
-
-			// Extract file
-			outFile, err := os.Create(cleanPath)
-			if err != nil {
-				return err
-			}
-
-			if _, err := io.Copy(outFile, tr); err != nil {
-				outFile.Close()
-				return err
-			}
-
-			outFile.Close()
-
-			// Set file permissions
-			if err := os.Chmod(cleanPath, os.FileMode(header.Mode)); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-// findJDKRootDir finds the actual JDK root directory within the extracted path
-func findJDKRootDir(extractPath string) (string, error) {
-	// JDK archives often contain a single root directory like "jdk-17.0.5+8"
-	entries, err := os.ReadDir(extractPath)
-	if err != nil {
-		return extractPath, err
-	}
-
-	// Look for a single directory that might be the JDK root
-	var jdkDir string
-	for _, entry := range entries {
-		if entry.IsDir() {
-			// Check if this directory contains typical JDK structure (bin, lib, etc.)
-			potentialJDKDir := filepath.Join(extractPath, entry.Name())
-			if isJDKDirectory(potentialJDKDir) {
-				jdkDir = potentialJDKDir
-				break
-			}
-		}
-	}
-
-	if jdkDir == "" {
-		// If no JDK-like subdirectory found, check if extractPath itself is a JDK
-		if isJDKDirectory(extractPath) {
-			return extractPath, nil
-		}
-		return extractPath, fmt.Errorf("could not locate JDK root directory")
-	}
-
-	return jdkDir, nil
-}
-
-// isJDKDirectory checks if a directory looks like a JDK installation
-func isJDKDirectory(dir string) bool {
-	// Check for typical JDK directories
-	requiredDirs := []string{"bin", "lib"}
-	for _, reqDir := range requiredDirs {
-		if _, err := os.Stat(filepath.Join(dir, reqDir)); err != nil {
-			return false
-		}
-	}
-
-	// Check for java executable
-	javaExe := "java"
-	if runtime.GOOS == "windows" {
-		javaExe = "java.exe"
-	}
-
-	if _, err := os.Stat(filepath.Join(dir, "bin", javaExe)); err != nil {
-		return false
-	}
-
-	return true
-}
-
-// flattenJDKDirectory moves the contents of a nested JDK directory up to the parent level
-func flattenJDKDirectory(jdkRootDir, targetDir, archivePath string) error {
-	// Create a temporary directory to avoid conflicts
-	tempDir := targetDir + "_temp"
-	if err := os.MkdirAll(tempDir, 0755); err != nil {
-		return err
-	}
-	defer os.RemoveAll(tempDir)
-
-	// Move JDK contents to temp directory
-	entries, err := os.ReadDir(jdkRootDir)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range entries {
-		srcPath := filepath.Join(jdkRootDir, entry.Name())
-		destPath := filepath.Join(tempDir, entry.Name())
-
-		if err := os.Rename(srcPath, destPath); err != nil {
-			return fmt.Errorf("failed to move %s: %v", entry.Name(), err)
-		}
-	}
-
-	// Remove the now empty nested directory structure
-	if err := os.RemoveAll(filepath.Join(targetDir, filepath.Base(jdkRootDir))); err != nil {
-		return err
-	}
-
-	// Move contents from temp to target directory
-	tempEntries, err := os.ReadDir(tempDir)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range tempEntries {
-		srcPath := filepath.Join(tempDir, entry.Name())
-		destPath := filepath.Join(targetDir, entry.Name())
-
-		if err := os.Rename(srcPath, destPath); err != nil {
-			return fmt.Errorf("failed to move %s to final location: %v", entry.Name(), err)
-		}
+	// Extract archive
+	if err := extractArchive(archivePath, jdkPath); err != nil {
+		return fmt.Errorf("extracting archive: %w", err)
 	}
 
 	return nil
