@@ -21,7 +21,7 @@ func ListInstalledJDKs() {
 	// Ottieni directory home dell'utente
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Printf("❌ Errore nell'ottenere la directory home: %v\n", err)
+		fmt.Printf("[ERROR] Errore nell'ottenere la directory home: %v\n", err)
 		return
 	}
 
@@ -30,7 +30,7 @@ func ListInstalledJDKs() {
 	// Controlla se la directory esiste
 	if _, err := os.Stat(versionsDir); os.IsNotExist(err) {
 		fmt.Println("📂 Nessuna installazione JDK trovata")
-		fmt.Printf("💡 La directory %s non esiste ancora\n", versionsDir)
+		fmt.Printf("[INFO] La directory %s non esiste ancora\n", versionsDir)
 		fmt.Println("   Usa 'jvm download <version>' per scaricare una versione")
 		return
 	}
@@ -38,13 +38,13 @@ func ListInstalledJDKs() {
 	// Leggi il contenuto della directory
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
-		fmt.Printf("❌ Errore nella lettura della directory: %v\n", err)
+		fmt.Printf("[ERROR] Errore nella lettura della directory: %v\n", err)
 		return
 	}
 
 	if len(entries) == 0 {
 		fmt.Println("📂 Nessuna installazione JDK trovata")
-		fmt.Printf("💡 La directory %s è vuota\n", versionsDir)
+		fmt.Printf("[INFO] La directory %s è vuota\n", versionsDir)
 		fmt.Println("   Usa 'jvm download <version>' per scaricare una versione")
 		return
 	}
@@ -279,11 +279,11 @@ func displayJDKTable(jdks []JDKInstallation) {
 
 	fmt.Println()
 	fmt.Println("📌 Legenda stato:")
-	fmt.Println("   ✅ PRONTO   - JDK estratto e pronto per l'uso")
+	fmt.Println("   [READY] PRONTO   - JDK estratto e pronto per l'uso")
 	fmt.Println("   📦 ARCHIVIO - Solo archivio scaricato (richiede estrazione)")
 	fmt.Println("   ❓ VUOTO    - Directory vuota o danneggiata")
 	fmt.Println()
-	fmt.Println("💡 Prossimi comandi disponibili:")
+	fmt.Println("[INFO] Prossimi comandi disponibili:")
 	fmt.Println("   jvm extract <version>  - Estrai un archivio JDK")
 	fmt.Println("   jvm use <version>      - Imposta come JDK attivo")
 	fmt.Println("   jvm remove <version>   - Rimuovi una versione")
@@ -292,7 +292,7 @@ func displayJDKTable(jdks []JDKInstallation) {
 // getStatusIcon restituisce l'icona di stato appropriata
 func getStatusIcon(isExtracted bool, archiveType string) string {
 	if isExtracted {
-		return "✅ PRONTO"
+		return "[READY] PRONTO"
 	} else if archiveType != "" {
 		return "📦 ARCHIVIO"
 	}

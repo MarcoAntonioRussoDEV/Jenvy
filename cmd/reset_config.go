@@ -6,19 +6,19 @@ import (
 	"path/filepath"
 )
 
-func ResetConfigFile() {
-	home, err := os.UserHomeDir()
+func ResetPrivateConfig() {
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println("❌ Error accessing user directory:", err)
+		fmt.Println("[ERROR] Error accessing user directory:", err)
 		return
 	}
 
-	path := filepath.Join(home, ".jvm", "config.json")
+	path := filepath.Join(homeDir, ".jvm", "config.json")
 	err = os.Remove(path)
 	if err != nil {
-		fmt.Println("⚠️ Unable to delete file:", err)
+		fmt.Println("[WARN] Unable to delete file:", err)
 		return
 	}
 
-	fmt.Println("✅ Private configuration removed successfully.")
+	fmt.Println("[SUCCESS] Private configuration removed successfully.")
 }

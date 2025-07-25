@@ -14,7 +14,7 @@ func main() {
 		return
 	}
 
-	// 👇 Provider predefinito centralizzato
+	// Provider predefinito centralizzato
 	provider := utils.DefaultProvider()
 
 	switch os.Args[1] {
@@ -27,20 +27,41 @@ func main() {
 	case "list", "l":
 		cmd.ListInstalledJDKs()
 
+	case "use", "u":
+		cmd.UseJDK()
+
 	case "completion":
-		if len(os.Args) > 2 && os.Args[2] == "install" {
-			cmd.InstallCompletion()
+		if len(os.Args) > 2 {
+			switch os.Args[2] {
+			case "install", "--install-all":
+				cmd.InstallCompletionForAllShells()
+			case "bash":
+				cmd.GenerateCompletion()
+			case "powershell":
+				fmt.Print(cmd.GeneratePowerShellCompletion())
+			case "cmd":
+				fmt.Print(cmd.GenerateCmdCompletion())
+			default:
+				fmt.Println("Usage: jvm completion [install|bash|powershell|cmd]")
+				fmt.Println("  install     - Install completion for all available shells")
+				fmt.Println("  bash        - Generate Bash completion script")
+				fmt.Println("  powershell  - Generate PowerShell completion script")
+				fmt.Println("  cmd         - Generate CMD completion script")
+			}
 		} else {
-			cmd.GenerateCompletion()
+			cmd.GenerateCompletion() // Default: Bash
 		}
 
 	case "fix-path", "fp":
 		cmd.FixPath()
 
+	case "init":
+		cmd.InitializeJVMEnvironment()
+
 	case "configure-private", "cp":
 		if len(os.Args) < 3 {
-			fmt.Println("❗ Usage: jvm configure-private <endpoint> [token]")
-			fmt.Println("❗ Short form: jvm cp <endpoint> [token]")
+			utils.PrintUsage("Usage: jvm configure-private <endpoint> [token]")
+			utils.PrintUsage("Short form: jvm cp <endpoint> [token]")
 			return
 		}
 		endpoint := os.Args[2]
@@ -54,13 +75,13 @@ func main() {
 		cmd.ShowCurrentConfig()
 
 	case "config-reset", "cr":
-		cmd.ResetConfigFile()
+		cmd.ResetPrivateConfig()
 
 	case "--help", "-h", "help":
 		cmd.ShowHelp()
 
 	default:
-		fmt.Printf("❌ Unknown command: %s\n", os.Args[1])
-		fmt.Println("💡 Use 'jvm --help' to see all available commands")
+		utils.PrintError(fmt.Sprintf("Unknown command: %s", os.Args[1]))
+		utils.PrintInfo("Use 'jvm --help' to see all available commands")
 	}
 }

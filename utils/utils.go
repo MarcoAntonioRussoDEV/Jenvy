@@ -22,7 +22,7 @@ func PrintTable(data [][]string, headers []string) {
 
 	// Righe dati
 	for _, row := range data {
-		if row[3] == "✅" {
+		if row[3] == "YES" {
 			// Riga evidenziata (versione LTS)
 			color.New(color.FgHiGreen).Printf(
 				"%-18s %-10s %-8s %-6s %s\n", row[0], row[1], row[2], row[3], row[4])
@@ -42,7 +42,7 @@ func PrintColoredRow(row []string) {
 // Converte boolean in icona ✓ o trattino
 func IfBool(b bool) string {
 	if b {
-		return "✅"
+		return "YES"
 	}
 	return "–"
 }
@@ -87,7 +87,7 @@ func ParseGenericVersion(v string) (int, int, int) {
 	return major, minor, patch
 }
 
-// SortRecommended ordina una slice con priorità: LTS ✅ > patch più alta > minor più alto
+// SortRecommended ordina una slice con priorità: LTS YES > patch più alta > minor più alto
 func SortRecommended[T VersionComparable](list []T) {
 	sort.SliceStable(list, func(i, j int) bool {
 		if list[i].LtsValue() != list[j].LtsValue() {

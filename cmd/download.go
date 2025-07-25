@@ -20,6 +20,7 @@ import (
 	"jvm/providers/liberica"
 	"jvm/providers/private"
 	"jvm/ui"
+	"jvm/utils"
 )
 
 // RuntimeInfo holds OS and architecture information
@@ -108,9 +109,9 @@ func DownloadJDK(defaultProvider string) {
 	// Parse command line arguments
 	args := os.Args[2:] // Skip "download"
 	if len(args) == 0 {
-		fmt.Println("❌ No JDK version specified")
-		fmt.Println("💡 Usage: jvm download <version> [options]")
-		fmt.Println("💡 Examples:")
+		utils.PrintError("No JDK version specified")
+		utils.PrintInfo("Usage: jvm download <version> [options]")
+		utils.PrintInfo("Examples:")
 		fmt.Println("  jvm download 17          # Download JDK 17")
 		fmt.Println("  jvm download 21.0.5      # Download specific version")
 		fmt.Println("  jvm download 17 --provider=azul")
@@ -123,7 +124,7 @@ func DownloadJDK(defaultProvider string) {
 	// Get default download directory: ~/.jvm/versions
 	outputDir, dirErr := getDefaultDownloadDir()
 	if dirErr != nil {
-		fmt.Printf("❌ Failed to determine download directory: %v\n", dirErr)
+		utils.PrintError(fmt.Sprintf("Failed to determine download directory: %v", dirErr))
 		outputDir = "./downloads" // fallback
 	}
 
@@ -137,12 +138,14 @@ func DownloadJDK(defaultProvider string) {
 		}
 	}
 
-	fmt.Printf("🔍 Searching for JDK version %s from provider: %s\n", version, provider)
-	fmt.Printf("📁 Download directory: %s\n\n", outputDir)
+	fmt.Printf("%s Searching for JDK version %s from provider: %s\n",
+		utils.ColorText("[>]", utils.BrightCyan), version, provider)
+	fmt.Printf("%s Download directory: %s\n\n",
+		utils.ColorText("[>]", utils.BrightCyan), outputDir)
 
 	// Create output directory if it doesn't exist
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		fmt.Printf("❌ Failed to create output directory: %v\n", err)
+		utils.PrintError(fmt.Sprintf("Failed to create output directory: %v", err))
 		return
 	}
 
@@ -155,7 +158,7 @@ func DownloadJDK(defaultProvider string) {
 	case "adoptium":
 		releases, err := adoptium.GetAllJDKs()
 		if err != nil {
-			fmt.Printf("❌ Failed to fetch releases from %s: %v\n", provider, err)
+			fmt.Printf("[ERROR] Failed to fetch releases from %s: %v\n", provider, err)
 			return
 		}
 		downloadURL, filename, foundVersion = findAdoptiumDownload(releases, version)
@@ -163,7 +166,7 @@ func DownloadJDK(defaultProvider string) {
 	case "azul":
 		releases, err := azul.GetAzulJDKs()
 		if err != nil {
-			fmt.Printf("❌ Failed to fetch releases from %s: %v\n", provider, err)
+			fmt.Printf("[ERROR] Failed to fetch releases from %s: %v\n", provider, err)
 			return
 		}
 		downloadURL, filename, foundVersion = findAzulDownload(releases, version)
@@ -171,7 +174,7 @@ func DownloadJDK(defaultProvider string) {
 	case "liberica":
 		releases, err := liberica.GetLibericaJDKs()
 		if err != nil {
-			fmt.Printf("❌ Failed to fetch releases from %s: %v\n", provider, err)
+			fmt.Printf("[ERROR] Failed to fetch releases from %s: %v\n", provider, err)
 			return
 		}
 		downloadURL, filename, foundVersion = findLibericaDownload(releases, version)
@@ -179,20 +182,20 @@ func DownloadJDK(defaultProvider string) {
 	case "private":
 		releases, err := private.GetPrivateJDKs()
 		if err != nil {
-			fmt.Printf("❌ Failed to fetch releases from %s: %v\n", provider, err)
+			fmt.Printf("[ERROR] Failed to fetch releases from %s: %v\n", provider, err)
 			return
 		}
 		downloadURL, filename, foundVersion = findPrivateDownload(releases, version)
 
 	default:
-		fmt.Printf("❌ Unknown provider: %s\n", provider)
-		fmt.Println("💡 Available providers: adoptium, azul, liberica, private")
+		fmt.Printf("[ERROR] Unknown provider: %s\n", provider)
+		fmt.Println("[INFO] Available providers: adoptium, azul, liberica, private")
 		return
 	}
 
 	if downloadURL == "" {
-		fmt.Printf("❌ JDK version %s not found in %s provider\n", version, provider)
-		fmt.Println("💡 Try running 'jvm remote-list' to see available versions")
+		fmt.Printf("[ERROR] JDK version %s not found in %s provider\n", version, provider)
+		fmt.Println("[INFO] Try running 'jvm remote-list' to see available versions")
 		return
 	}
 
@@ -206,30 +209,30 @@ func DownloadJDK(defaultProvider string) {
 
 	// Create version-specific directory
 	if err := os.MkdirAll(versionOutputDir, 0755); err != nil {
-		fmt.Printf("❌ Failed to create version directory: %v\n", err)
+		fmt.Printf("[ERROR] Failed to create version directory: %v\n", err)
 		return
 	}
 
 	outputPath := filepath.Join(versionOutputDir, filename)
 
-	fmt.Printf("📦 Found JDK %s\n", foundVersion)
-	fmt.Printf("🔗 Download URL: %s\n", downloadURL)
-	fmt.Printf("� Version directory: %s\n", versionOutputDir)
-	fmt.Printf("�💾 Saving to: %s\n", outputPath)
+	fmt.Printf("%s JDK %s\n", utils.ColorText("[FOUND]", utils.BrightGreen), foundVersion)
+	fmt.Printf("%s Download URL: %s\n", utils.ColorText("[URL]", utils.BrightBlue), downloadURL)
+	fmt.Printf("%s Version directory: %s\n", utils.ColorText("[DIR]", utils.BrightYellow), versionOutputDir)
+	fmt.Printf("%s Saving to: %s\n", utils.ColorText("[FILE]", utils.BrightMagenta), outputPath)
 
 	// Check if file already exists
 	if _, err := os.Stat(outputPath); err == nil {
-		fmt.Printf("⚠️  File already exists: %s\n", filename)
+		utils.PrintWarning(fmt.Sprintf("File already exists: %s", filename))
 	}
 
 	// Ask for confirmation
-	fmt.Print("\n🤔 Do you want to proceed with the download? (y/N): ")
+	fmt.Print("\n[?] Do you want to proceed with the download? (y/N): ")
 	var response string
 	fmt.Scanln(&response)
 
 	response = strings.ToLower(strings.TrimSpace(response))
 	if response != "y" && response != "yes" {
-		fmt.Println("❌ Download cancelled by user")
+		utils.PrintInfo("Download cancelled by user")
 		return
 	}
 
@@ -237,29 +240,31 @@ func DownloadJDK(defaultProvider string) {
 
 	// Download the file
 	if err := downloadFile(downloadURL, outputPath); err != nil {
-		fmt.Printf("❌ Download failed: %v\n", err)
+		utils.PrintError(fmt.Sprintf("Download failed: %v", err))
 		return
 	}
 
-	fmt.Printf("✅ Download completed successfully!\n")
-	fmt.Printf("📁 JDK %s saved to: %s\n", foundVersion, versionOutputDir)
-	fmt.Printf("📄 Archive file: %s\n", filename)
+	utils.PrintSuccess("Download completed successfully!")
+	fmt.Printf("%s JDK %s saved to: %s\n",
+		utils.ColorText("[OUTPUT]", utils.BrightGreen), foundVersion, versionOutputDir)
+	fmt.Printf("%s Archive file: %s\n",
+		utils.ColorText("[FILE]", utils.BrightBlue), filename)
 
 	// Show file info
 	if fileInfo, err := os.Stat(outputPath); err == nil {
-		fmt.Printf("📏 File size: %.2f MB\n", float64(fileInfo.Size())/1024/1024)
-		fmt.Printf("🕒 Download time: %s\n", time.Now().Format("15:04:05"))
+		fmt.Printf("[SIZE] File size: %.2f MB\n", float64(fileInfo.Size())/1024/1024)
+		fmt.Printf("[TIME] Download time: %s\n", time.Now().Format("15:04:05"))
 	}
 
 	// Extract the archive automatically
-	fmt.Printf("\n🗂️ Extracting JDK archive...\n")
+	fmt.Printf("\n[EXTRACT] Extracting JDK archive...\n")
 	extractPath := versionOutputDir // Extract directly to version directory
 
 	if err := extractArchive(outputPath, extractPath); err != nil {
-		fmt.Printf("⚠️ Extraction failed: %v\n", err)
-		fmt.Printf("💡 You can manually extract: %s\n", outputPath)
+		fmt.Printf("[WARN] Extraction failed: %v\n", err)
+		fmt.Printf("[INFO] You can manually extract: %s\n", outputPath)
 	} else {
-		fmt.Printf("✅ JDK extracted successfully to: %s\n", extractPath)
+		fmt.Printf("[SUCCESS] JDK extracted successfully to: %s\n", extractPath)
 
 		// Try to find the actual JDK root directory and move it to a cleaner path
 		jdkRootDir, err := findJDKRootDir(extractPath)
@@ -267,31 +272,31 @@ func DownloadJDK(defaultProvider string) {
 			// If we found a nested JDK directory, move its contents up one level
 			if jdkRootDir != extractPath {
 				if err := flattenJDKDirectory(jdkRootDir, extractPath, outputPath); err == nil {
-					fmt.Printf("🎯 JDK ready at: %s\n", extractPath)
-					fmt.Printf("💡 Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
+					fmt.Printf("[READY] JDK ready at: %s\n", extractPath)
+					fmt.Printf("[PATH] Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
 				} else {
-					fmt.Printf("🎯 JDK ready at: %s\n", jdkRootDir)
-					fmt.Printf("💡 Add to PATH: %s\n", filepath.Join(jdkRootDir, "bin"))
+					fmt.Printf("[READY] JDK ready at: %s\n", jdkRootDir)
+					fmt.Printf("[PATH] Add to PATH: %s\n", filepath.Join(jdkRootDir, "bin"))
 				}
 			} else {
-				fmt.Printf("🎯 JDK ready at: %s\n", extractPath)
-				fmt.Printf("💡 Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
+				fmt.Printf("[READY] JDK ready at: %s\n", extractPath)
+				fmt.Printf("[PATH] Add to PATH: %s\n", filepath.Join(extractPath, "bin"))
 			}
 		}
 
 		// Optionally remove the archive file
-		fmt.Printf("\n🗑️ Remove archive file? (y/N): ")
+		fmt.Printf("\n[CLEAN] Remove archive file? (y/N): ")
 		var response string
 		fmt.Scanln(&response)
 		if strings.ToLower(strings.TrimSpace(response)) == "y" {
 			if err := os.Remove(outputPath); err == nil {
-				fmt.Printf("🗑️ Archive file removed\n")
+				fmt.Printf("[CLEAN] Archive file removed\n")
 			}
 		}
 	}
 
 	fmt.Println()
-	fmt.Println("💡 Next steps:")
+	fmt.Println("[INFO] Next steps:")
 	fmt.Printf("   jvm list                   # View downloaded JDKs\n")
 	fmt.Printf("   jvm extract %s            # Extract the archive (coming soon)\n", foundVersion)
 	fmt.Printf("   jvm use %s                # Set as active JDK (coming soon)\n", foundVersion)
@@ -339,7 +344,7 @@ func downloadFile(url, filepath string) error {
 	// Create a buffer for copying
 	buffer := make([]byte, 32*1024) // 32KB buffer
 
-	fmt.Println("⬇️ Downloading...")
+	fmt.Println("[DOWNLOAD] Downloading...")
 	startTime := time.Now()
 
 	for {
@@ -356,7 +361,7 @@ func downloadFile(url, filepath string) error {
 				elapsed := time.Since(startTime)
 				speed := float64(downloaded) / elapsed.Seconds() / 1024 / 1024 // MB/s
 
-				fmt.Printf("\r📊 Progress: %.1f%% (%.2f MB / %.2f MB) - Speed: %.2f MB/s",
+				fmt.Printf("\r[DOWNLOAD] Progress: %.1f%% (%.2f MB / %.2f MB) - Speed: %.2f MB/s",
 					progress,
 					float64(downloaded)/1024/1024,
 					float64(contentLength)/1024/1024,
@@ -367,7 +372,7 @@ func downloadFile(url, filepath string) error {
 				elapsed := time.Since(startTime)
 				speed := float64(downloaded) / elapsed.Seconds() / 1024 / 1024 // MB/s
 
-				fmt.Printf("\r📊 Downloaded: %.2f MB - Speed: %.2f MB/s",
+				fmt.Printf("\r[DOWNLOAD] Downloaded: %.2f MB - Speed: %.2f MB/s",
 					float64(downloaded)/1024/1024,
 					speed,
 				)

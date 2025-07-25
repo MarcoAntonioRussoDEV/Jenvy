@@ -108,6 +108,7 @@ var
   Endpoint, Token: string;
   ConfigPath, JSON: string;
   CurrentPath: string;
+  ResultCode: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
@@ -128,6 +129,9 @@ begin
         Log(Format('Added to SYSTEM PATH: %s', [ExpandConstant('{app}')]));
       end;
     end;
+    
+    // Install shell completions for all available shells
+    Exec(ExpandConstant('{app}\jvm.exe'), 'completion --install-all', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     
     // Configure private repository if requested
     if ConfigurePrivate then

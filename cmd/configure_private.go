@@ -10,7 +10,7 @@ import (
 func ConfigurePrivateRepo(endpoint string, token string) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println("❌ Unable to determine user directory:", err)
+		fmt.Println("[ERROR] Unable to determine user directory:", err)
 		return
 	}
 
@@ -25,7 +25,7 @@ func ConfigurePrivateRepo(endpoint string, token string) {
 
 	file, err := os.Create(path)
 	if err != nil {
-		fmt.Println("❌ Write error:", err)
+		fmt.Println("[ERROR] Write error:", err)
 		return
 	}
 	defer file.Close()
@@ -34,10 +34,10 @@ func ConfigurePrivateRepo(endpoint string, token string) {
 	enc.SetIndent("", "  ")
 	err = enc.Encode(cfg)
 	if err != nil {
-		fmt.Println("❌ JSON encoding error:", err)
+		fmt.Println("[ERROR] JSON encoding error:", err)
 		return
 	}
 
-	fmt.Println("✅ Private repository configured successfully!")
+	fmt.Println("[SUCCESS] Private repository configured successfully!")
 	fmt.Println("📁 File:", path)
 }
