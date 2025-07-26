@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"jvm/cmd"
-	"jvm/utils"
+	"jvm/internal/cmd"
+	"jvm/internal/utils"
 )
 
 func main() {
