@@ -10,7 +10,7 @@ import (
 //
 // Questa funzione esegue le seguenti operazioni di setup:
 // 1. Verifica che l'eseguibile jvm sia presente nel PATH di sistema
-// 2. Crea la directory di configurazione ~/.jvm se non esiste
+// 2. Crea la directory di configurazione ~/.jenvy se non esiste
 // 3. Installa gli script di autocompletamento per Bash, PowerShell e CMD
 // 4. Controlla l'esistenza di un file di configurazione e ne crea uno di default se necessario
 // 5. Mostra un riepilogo dei comandi disponibili all'utente
@@ -24,8 +24,8 @@ import (
 //
 // Note:
 //   - Dopo l'esecuzione è necessario riavviare il terminale per abilitare l'autocompletamento
-//   - La directory di configurazione viene creata in C:\Users\username\.jvm
-//   - Il comando 'jvm use' richiede privilegi amministratore per modificare il Registry Windows
+//   - La directory di configurazione viene creata in C:\Users\username\.jenvy
+//   - Il comando 'jenvy use' richiede privilegi amministratore per modificare il Registry Windows
 //   - Il file di configurazione di default include impostazioni per provider preferito e LTS
 //   - Supporta solo Windows (richiede Registry di sistema e UAC per gestione JAVA_HOME)
 func Init() {
@@ -118,20 +118,20 @@ func isJvmInPath() bool {
 	return false
 }
 
-// createConfigDirectory crea la directory di configurazione .jvm nel profilo utente Windows.
+// createConfigDirectory crea la directory di configurazione .jenvy nel profilo utente Windows.
 //
 // Questa funzione è responsabile della creazione della struttura di directory necessaria
 // per memorizzare i file di configurazione, cache e dati temporanei di JVM su Windows.
 //
 // Struttura creata:
 //
-//	C:\Users\username\.jvm\    # Directory principale di configurazione
+//	C:\Users\username\.jenvy\    # Directory principale di configurazione
 //	├── config.json           # File di configurazione principale (creato separatamente)
 //	└── versions\             # Directory per JDK scaricati (creata al primo download)
 //
 // Processo di creazione:
 // 1. Ottiene la directory home dell'utente corrente usando os.UserHomeDir()
-// 2. Costruisce il percorso completo: C:\Users\username\.jvm
+// 2. Costruisce il percorso completo: C:\Users\username\.jenvy
 // 3. Utilizza os.MkdirAll() per creare ricorsivamente tutte le directory necessarie
 // 4. Imposta i permessi a 0755 (equivalente Windows: full control per owner, read per altri)
 //
@@ -163,18 +163,18 @@ func createConfigDirectory() error {
 		return err
 	}
 
-	configDir := filepath.Join(homeDir, ".jvm")
+	configDir := filepath.Join(homeDir, ".jenvy")
 	return os.MkdirAll(configDir, 0755)
 }
 
 // hasExistingConfig verifica l'esistenza di un file di configurazione nella directory Windows.
 //
 // Questa funzione controlla se l'utente ha già un file di configurazione config.json
-// nella directory C:\Users\username\.jvm, che contiene le impostazioni personalizzate per JVM.
+// nella directory C:\Users\username\.jenvy, che contiene le impostazioni personalizzate per JVM.
 //
 // Percorso verificato:
 //
-//	C:\Users\username\.jvm\config.json    # File di configurazione principale
+//	C:\Users\username\.jenvy\config.json    # File di configurazione principale
 //
 // Processo di verifica:
 // 1. Ottiene la directory home dell'utente Windows usando os.UserHomeDir()
@@ -194,7 +194,7 @@ func createConfigDirectory() error {
 //   - Se non è possibile determinare la home directory Windows: ritorna false
 //   - Se il file non esiste: ritorna false
 //   - Se il file esiste ma non è accessibile (permessi Windows): ritorna false
-//   - Se la directory .jvm non esiste: ritorna false
+//   - Se la directory .jenvy non esiste: ritorna false
 //
 // Casi d'uso:
 //   - Determinare se creare una configurazione di default durante l'inizializzazione
@@ -212,7 +212,7 @@ func hasExistingConfig() bool {
 		return false
 	}
 
-	configPath := filepath.Join(homeDir, ".jvm", "config.json")
+	configPath := filepath.Join(homeDir, ".jenvy", "config.json")
 	_, err = os.Stat(configPath)
 	return err == nil
 }
@@ -226,7 +226,7 @@ func hasExistingConfig() bool {
 //
 //	{
 //	  "defaultProvider": "adoptium",     // Provider Eclipse Adoptium come default (più popolare)
-//	  "downloadPath": "",                // Usa directory default Windows (C:\Users\username\.jvm\versions)
+//	  "downloadPath": "",                // Usa directory default Windows (C:\Users\username\.jenvy\versions)
 //	  "privateRepositories": [],         // Nessun repository privato configurato inizialmente
 //	  "lastCheck": "",                   // Nessun check precedente delle versioni remote
 //	  "autoUpdate": true,                // Abilita controlli automatici degli aggiornamenti
@@ -236,7 +236,7 @@ func hasExistingConfig() bool {
 // Processo di creazione:
 // 1. Definisce la struttura JSON di configurazione con valori sensati per Windows
 // 2. Ottiene la directory home dell'utente Windows
-// 3. Costruisce il percorso completo: C:\Users\username\.jvm\config.json
+// 3. Costruisce il percorso completo: C:\Users\username\.jenvy\config.json
 // 4. Scrive il file con permessi appropriati Windows
 //
 // Parametri:
@@ -249,7 +249,7 @@ func hasExistingConfig() bool {
 //
 // Gestione errori:
 //   - Errore se non è possibile determinare la directory home Windows
-//   - Errore se non si hanno i permessi di scrittura nella directory .jvm
+//   - Errore se non si hanno i permessi di scrittura nella directory .jenvy
 //   - Errore se il filesystem è pieno o in sola lettura
 //   - Errore se Windows UAC blocca la scrittura nella directory utente
 //
@@ -288,7 +288,7 @@ func createDefaultConfig() error {
 	}
 
 	// Costruisce il percorso completo del file di configurazione Windows
-	configPath := filepath.Join(homeDir, ".jvm", "config.json")
+	configPath := filepath.Join(homeDir, ".jenvy", "config.json")
 
 	// Scrive il file di configurazione nel profilo utente Windows
 	// Il file avrà permessi appropriati per l'ambiente Windows

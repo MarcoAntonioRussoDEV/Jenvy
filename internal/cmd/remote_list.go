@@ -6,11 +6,11 @@ import (
 	"os"
 	"strings"
 
-	"jvm/internal/providers/adoptium"
-	"jvm/internal/providers/azul"
-	"jvm/internal/providers/liberica"
-	"jvm/internal/providers/private"
-	"jvm/internal/utils"
+	"jenvy/internal/providers/adoptium"
+	"jenvy/internal/providers/azul"
+	"jenvy/internal/providers/liberica"
+	"jenvy/internal/providers/private"
+	"jenvy/internal/utils"
 )
 
 // RemoteList gestisce la visualizzazione delle versioni JDK disponibili dai provider remoti Windows.
@@ -252,7 +252,7 @@ func printRecommendedLiberica() {
 // - Cache locale per ambienti disconnessi
 //
 // Prerequisito: Il repository privato deve essere configurato tramite
-// il comando 'jvm configure private <URL>' con credenziali appropriate.
+// il comando 'jenvy configure private <URL>' con credenziali appropriate.
 func printRecommendedPrivate() {
 	utils.PrintFetch("Fetching data from Private repository...")
 	list, err := private.GetPrivateJDKs()
@@ -505,7 +505,7 @@ func printLiberica(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 //   - jdkFilter: filtra per versione JDK specifica (0 = tutte)
 //   - ltsOnly: mostra solo versioni con supporto a lungo termine
 //
-// Prerequisito: Repository privato configurato tramite 'jvm configure private <URL>'.
+// Prerequisito: Repository privato configurato tramite 'jenvy configure private <URL>'.
 func printPrivate(majorOnly, latestOnly bool, jdkFilter int, ltsOnly bool) {
 	list, err := private.GetPrivateJDKs()
 	if err != nil {

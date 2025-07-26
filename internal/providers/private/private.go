@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 type PrivateRelease struct {
@@ -34,7 +34,7 @@ type RecommendedEntry struct {
 func GetPrivateJDKs() ([]PrivateRelease, error) {
 	cfg, err := utils.LoadConfig()
 	if err != nil || cfg.PrivateEndpoint == "" {
-		return nil, errors.New("⚠️ Private endpoint not configured. Check ~/.jvm/config.json")
+		return nil, errors.New("⚠️ Private endpoint not configured. Check ~/.jenvy/config.json")
 	}
 
 	endpoint := cfg.PrivateEndpoint

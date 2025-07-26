@@ -58,8 +58,8 @@ func TestIntegrationWorkflow(t *testing.T) {
 
 // setupTestEnvironment prepara l'ambiente di test
 func setupTestEnvironment(t *testing.T, baseDir string) {
-	// Crea directory .jvm/versions
-	jvmDir := filepath.Join(baseDir, ".jvm")
+	// Crea directory .jenvy/versions
+	jvmDir := filepath.Join(baseDir, ".jenvy")
 	versionsDir := filepath.Join(jvmDir, "versions")
 	err := os.MkdirAll(versionsDir, 0755)
 	if err != nil {
@@ -105,8 +105,8 @@ type UseResult struct {
 
 // simulateJVMInit simula l'inizializzazione di JVM
 func simulateJVMInit(t *testing.T, baseDir string) InitResult {
-	// Verifica che directory .jvm esista
-	jvmDir := filepath.Join(baseDir, ".jvm")
+	// Verifica che directory .jenvy esista
+	jvmDir := filepath.Join(baseDir, ".jenvy")
 	if _, err := os.Stat(jvmDir); os.IsNotExist(err) {
 		return InitResult{
 			Success: false,
@@ -143,7 +143,7 @@ func simulateRemoteList(t *testing.T) RemoteListResult {
 // simulateDownload simula il download di una versione JDK
 func simulateDownload(t *testing.T, baseDir string, version string) DownloadResult {
 	// Crea directory JDK mock
-	versionsDir := filepath.Join(baseDir, ".jvm", "versions")
+	versionsDir := filepath.Join(baseDir, ".jenvy", "versions")
 	jdkDir := filepath.Join(versionsDir, "JDK-"+version)
 
 	err := os.MkdirAll(jdkDir, 0755)
@@ -193,7 +193,7 @@ func simulateDownload(t *testing.T, baseDir string, version string) DownloadResu
 
 // simulateList simula la lista delle versioni installate
 func simulateList(t *testing.T, baseDir string) ListResult {
-	versionsDir := filepath.Join(baseDir, ".jvm", "versions")
+	versionsDir := filepath.Join(baseDir, ".jenvy", "versions")
 
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
@@ -214,7 +214,7 @@ func simulateList(t *testing.T, baseDir string) ListResult {
 // simulateUse simula l'utilizzo di una versione JDK
 func simulateUse(t *testing.T, baseDir string, version string) UseResult {
 	// Verifica che il JDK esista
-	jdkDir := filepath.Join(baseDir, ".jvm", "versions", "JDK-"+version)
+	jdkDir := filepath.Join(baseDir, ".jenvy", "versions", "JDK-"+version)
 	if _, err := os.Stat(jdkDir); os.IsNotExist(err) {
 		return UseResult{
 			Success: false,

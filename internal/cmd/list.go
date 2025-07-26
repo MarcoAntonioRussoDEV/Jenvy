@@ -9,15 +9,15 @@ import (
 	"strconv"
 	"strings"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 // ListInstalledJDKs esegue la scansione e visualizzazione di tutte le installazioni JDK locali su Windows.
 //
 // Questa funzione implementa un sistema completo di rilevamento e analisi delle installazioni JDK
-// nella directory di gestione locale (~/.jvm/versions) con le seguenti funzionalità:
+// nella directory di gestione locale (~/.jenvy/versions) con le seguenti funzionalità:
 //
-//  1. **Scansione directory JVM**: Accede alla directory ~/.jvm/versions nel profilo utente Windows
+//  1. **Scansione directory JVM**: Accede alla directory ~/.jenvy/versions nel profilo utente Windows
 //     per individuare tutte le installazioni JDK gestite dal tool
 //
 //  2. **Analisi automatica**: Per ogni installazione rilevata esegue:
@@ -58,13 +58,13 @@ func ListInstalledJDKs() {
 		return
 	}
 
-	versionsDir := filepath.Join(homeDir, ".jvm", "versions")
+	versionsDir := filepath.Join(homeDir, ".jenvy", "versions")
 
 	// Controlla se la directory esiste
 	if _, err := os.Stat(versionsDir); os.IsNotExist(err) {
 		fmt.Println(utils.WarningText("No JDK installations found"))
 		fmt.Printf("[INFO] Directory %s does not exist yet\n", versionsDir)
-		fmt.Println("   Use 'jvm download <version>' to download a version")
+		fmt.Println("   Use 'jenvy download <version>' to download a version")
 		return
 	}
 
@@ -78,7 +78,7 @@ func ListInstalledJDKs() {
 	if len(entries) == 0 {
 		fmt.Println(utils.WarningText("No JDK installations found"))
 		fmt.Printf("[INFO] Directory %s is empty\n", versionsDir)
-		fmt.Println("   Use 'jvm download <version>' to download a version")
+		fmt.Println("   Use 'jenvy download <version>' to download a version")
 		return
 	}
 

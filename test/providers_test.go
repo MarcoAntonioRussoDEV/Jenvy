@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"jvm/internal/providers/adoptium"
+	"jenvy/internal/providers/adoptium"
 )
 
 // TestAdoptiumVersionParsing testa il parsing delle versioni Adoptium

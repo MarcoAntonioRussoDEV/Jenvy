@@ -1,7 +1,7 @@
 package adoptium
 
 import (
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 	"sort"
 )
 

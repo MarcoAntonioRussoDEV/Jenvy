@@ -9,9 +9,9 @@ build/dist/
 launch.json
 
 # Design files (keep source files, ignore exports)
-assets/images/jvm.psd
-assets/images/jvm.svg
-assets/icons/jvm.png
+assets/images/jenvy.psd
+assets/images/jenvy.svg
+assets/icons/jenvy.png
 
 # Temporary files
 *.tmp

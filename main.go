@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"jvm/internal/cmd"
-	"jvm/internal/utils"
+	"jenvy/internal/cmd"
+	"jenvy/internal/utils"
 )
 
 func main() {
@@ -48,7 +48,7 @@ func main() {
 			case "cmd":
 				fmt.Print(cmd.GenerateCmdCompletion())
 			default:
-				fmt.Println("Usage: jvm completion [install|bash|powershell|cmd]")
+				fmt.Println("Usage: jenvy completion [install|bash|powershell|cmd]")
 				fmt.Println("  install     - Install completion for all available shells")
 				fmt.Println("  bash        - Generate Bash completion script")
 				fmt.Println("  powershell  - Generate PowerShell completion script")
@@ -66,8 +66,8 @@ func main() {
 
 	case "configure-private", "cp":
 		if len(os.Args) < 3 {
-			utils.PrintUsage("Usage: jvm configure-private <endpoint> [token]")
-			utils.PrintUsage("Short form: jvm cp <endpoint> [token]")
+			utils.PrintUsage("Usage: jenvy configure-private <endpoint> [token]")
+			utils.PrintUsage("Short form: jenvy cp <endpoint> [token]")
 			return
 		}
 		endpoint := os.Args[2]
@@ -88,6 +88,6 @@ func main() {
 
 	default:
 		utils.PrintError(fmt.Sprintf("Unknown command: %s", os.Args[1]))
-		utils.PrintInfo("Use 'jvm --help' to see all available commands")
+		utils.PrintInfo("Use 'jenvy --help' to see all available commands")
 	}
 }

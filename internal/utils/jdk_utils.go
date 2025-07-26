@@ -241,7 +241,7 @@ func IsLTSVersion(version string) bool {
 //
 // Esempi di utilizzo:
 //
-//	if IsValidJDKDirectory("C:\\Users\\user\\.jvm\\versions\\JDK-17") {
+//	if IsValidJDKDirectory("C:\\Users\\user\\.jenvy\\versions\\JDK-17") {
 //	    // Sicuro da utilizzare come JAVA_HOME
 //	}
 //
@@ -276,14 +276,14 @@ func IsValidJDKDirectory(path string) bool {
 //
 // Struttura directory standard:
 //
-//	C:\Users\{username}\.jvm\versions\
+//	C:\Users\{username}\.jenvy\versions\
 //	├── JDK-17.0.5\          # Versione specifica JDK
 //	├── JDK-21.0.2\          # Altra versione JDK
 //	└── JDK-8.0.392\         # Versione legacy
 //
 // Processo di determinazione:
 // 1. **Directory utente**: Usa user.Current() per ottenere home directory
-// 2. **Costruzione path**: Combina home + ".jvm" + "versions"
+// 2. **Costruzione path**: Combina home + ".jenvy" + "versions"
 // 3. **Path assoluto**: Ritorna percorso completo e normalizzato
 //
 // Parametri:
@@ -292,7 +292,7 @@ func IsValidJDKDirectory(path string) bool {
 //
 // Restituisce:
 //
-//	string - Percorso assoluto directory versions (~/.jvm/versions)
+//	string - Percorso assoluto directory versions (~/.jenvy/versions)
 //	error  - nil se successo, errore se impossibile determinare directory home
 //
 // Utilizzo tipico:
@@ -301,14 +301,14 @@ func IsValidJDKDirectory(path string) bool {
 //	if err != nil {
 //	    return fmt.Errorf("cannot access JVM directory: %w", err)
 //	}
-//	// versionsDir = "C:\Users\Marco\.jvm\versions"
+//	// versionsDir = "C:\Users\Marco\.jenvy\versions"
 func GetJVMVersionsDirectory() (string, error) {
 	homeDir, err := user.Current()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current user: %w", err)
 	}
 
-	versionsDir := filepath.Join(homeDir.HomeDir, ".jvm", "versions")
+	versionsDir := filepath.Join(homeDir.HomeDir, ".jenvy", "versions")
 	return versionsDir, nil
 }
 
@@ -356,7 +356,7 @@ func GetJVMVersionsDirectory() (string, error) {
 //	if len(paths) == 0 {
 //	    return fmt.Errorf("no JDK found for version 17")
 //	}
-//	// paths = ["C:\Users\user\.jvm\versions\JDK-17.0.5"]
+//	// paths = ["C:\Users\user\.jenvy\versions\JDK-17.0.5"]
 func FindJDKInstallationPaths(version string) ([]string, error) {
 	versionsDir, err := GetJVMVersionsDirectory()
 	if err != nil {
@@ -440,7 +440,7 @@ func FindJDKInstallationPaths(version string) ([]string, error) {
 //	    PrintError(fmt.Sprintf("JDK lookup failed: %v", err))
 //	    return
 //	}
-//	// jdkPath = "C:\Users\user\.jvm\versions\JDK-17.0.5"
+//	// jdkPath = "C:\Users\user\.jenvy\versions\JDK-17.0.5"
 func FindSingleJDKInstallation(version string) (string, error) {
 	matches, err := FindJDKInstallationPaths(version)
 	if err != nil {

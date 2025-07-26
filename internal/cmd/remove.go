@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 // RemoveJDK gestisce la rimozione sicura di installazioni JDK dal sistema Windows.
@@ -40,9 +40,9 @@ import (
 // feedback dettagliato e opzioni di rollback in caso di problemi.
 func RemoveJDK() {
 	if len(os.Args) < 3 {
-		utils.PrintUsage("Usage: jvm remove <version>")
+		utils.PrintUsage("Usage: jenvy remove <version>")
 		utils.PrintUsage("       jvm remove --all")
-		utils.PrintUsage("Short form: jvm rm <version>")
+		utils.PrintUsage("Short form: jenvy rm <version>")
 		utils.PrintUsage("           jvm rm -a")
 		utils.PrintInfo("Available JDKs:")
 		showAvailableJDKsForRemoval()
@@ -64,7 +64,7 @@ func RemoveJDK() {
 		return
 	}
 
-	versionsDir := filepath.Join(homeDir, ".jvm", "versions")
+	versionsDir := filepath.Join(homeDir, ".jenvy", "versions")
 
 	// Controlla se la directory esiste
 	if _, err := os.Stat(versionsDir); os.IsNotExist(err) {
@@ -77,7 +77,7 @@ func RemoveJDK() {
 	jdkPath, err := findJDKForRemoval(versionsDir, version)
 	if err != nil {
 		utils.PrintError(fmt.Sprintf("JDK version %s not found: %v", version, err))
-		utils.PrintInfo("Run 'jvm list' to see installed JDKs")
+		utils.PrintInfo("Run 'jenvy list' to see installed JDKs")
 		return
 	}
 
@@ -327,7 +327,7 @@ func isJDKCurrentlyInUse(jdkPath string) bool {
 // attualmente installate, facilitando la selezione per operazioni di rimozione:
 //
 // **Scansione directory Windows:**
-// - Lettura sicura della directory %USERPROFILE%\.jvm\versions Windows
+// - Lettura sicura della directory %USERPROFILE%\.jenvy\versions Windows
 // - Enumerazione solo di directory valide (ignora file temporanei)
 // - Gestione permessi insufficienti con fallback graceful
 // - Supporto per percorsi lunghi Windows (>260 caratteri)
@@ -339,7 +339,7 @@ func isJDKCurrentlyInUse(jdkPath string) bool {
 // - Gestione graceful di directory vuote o corrotte
 //
 // **Gestione errori Windows:**
-// - Verifica esistenza directory .jvm nel profilo utente
+// - Verifica esistenza directory .jenvy nel profilo utente
 // - Controllo permessi di lettura sulla directory versioni
 // - Fallback silenzioso su errori di accesso filesystem
 // - Messaggi informativi per directory inesistenti
@@ -358,7 +358,7 @@ func showAvailableJDKsForRemoval() {
 		return
 	}
 
-	versionsDir := filepath.Join(homeDir, ".jvm", "versions")
+	versionsDir := filepath.Join(homeDir, ".jenvy", "versions")
 	if _, err := os.Stat(versionsDir); os.IsNotExist(err) {
 		utils.PrintInfo("No JDK installations found")
 		return
@@ -490,7 +490,7 @@ func removeAllJDKs() {
 		return
 	}
 
-	versionsDir := filepath.Join(homeDir, ".jvm", "versions")
+	versionsDir := filepath.Join(homeDir, ".jenvy", "versions")
 
 	// Controlla se la directory esiste
 	if _, err := os.Stat(versionsDir); os.IsNotExist(err) {
@@ -593,6 +593,6 @@ func removeAllJDKs() {
 			os.Remove(versionsDir) // Rimuovi la directory vuota (ignora errori)
 		}
 		utils.PrintInfo("All JDK installations have been removed")
-		utils.PrintInfo("Run 'jvm download <version>' to install a new JDK")
+		utils.PrintInfo("Run 'jenvy download <version>' to install a new JDK")
 	}
 }

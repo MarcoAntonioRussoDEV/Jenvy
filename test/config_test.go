@@ -310,7 +310,7 @@ func TestConfigurationPersistence(t *testing.T) {
 	tempDir := t.TempDir()
 
 	// Simula ottenimento directory di configurazione
-	configDir := filepath.Join(tempDir, ".jvm")
+	configDir := filepath.Join(tempDir, ".jenvy")
 	err := os.MkdirAll(configDir, 0755)
 	if err != nil {
 		t.Fatalf("Failed to create config directory: %v", err)

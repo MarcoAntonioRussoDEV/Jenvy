@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 
 	"golang.org/x/sys/windows/registry"
 )
@@ -68,7 +68,7 @@ import (
 //	[INFO] Administrator privileges required to modify system environment variables
 //	[INFO] Requesting administrator privileges...
 //	[SUCCESS] Set JAVA_HOME to JDK 17
-//	[INFO] JAVA_HOME = C:\Users\user\.jvm\versions\JDK-17.0.5
+//	[INFO] JAVA_HOME = C:\Users\user\.jenvy\versions\JDK-17.0.5
 //	[INFO] Restart your terminal/IDE to see the changes
 //
 // Scenari di errore:
@@ -78,8 +78,8 @@ import (
 //   - Errori registro: Consigli troubleshooting per problemi Windows
 func UseJDK() {
 	if len(os.Args) < 3 {
-		utils.PrintUsage("Usage: jvm use <version>")
-		utils.PrintUsage("Short form: jvm u <version>")
+		utils.PrintUsage("Usage: jenvy use <version>")
+		utils.PrintUsage("Short form: jenvy u <version>")
 		utils.PrintInfo("Available JDKs:")
 		showAvailableJDKs()
 		return
@@ -99,7 +99,7 @@ func UseJDK() {
 	if err != nil {
 		utils.PrintError("JVM versions directory not found or inaccessible")
 		utils.PrintInfo("No JDKs appear to be installed yet")
-		utils.PrintInfo(fmt.Sprintf("Use 'jvm download %s' to download your first JDK", version))
+		utils.PrintInfo(fmt.Sprintf("Use 'jenvy download %s' to download your first JDK", version))
 		return
 	}
 
@@ -116,8 +116,8 @@ func UseJDK() {
 
 	if jdkCount == 0 {
 		utils.PrintError("No valid JDK installations found")
-		utils.PrintInfo("The .jvm/versions directory exists but contains no valid JDK installations")
-		utils.PrintInfo(fmt.Sprintf("Use 'jvm download %s' to download a JDK", version))
+		utils.PrintInfo("The .jenvy/versions directory exists but contains no valid JDK installations")
+		utils.PrintInfo(fmt.Sprintf("Use 'jenvy download %s' to download a JDK", version))
 		return
 	}
 
@@ -129,14 +129,14 @@ func UseJDK() {
 			utils.PrintError(fmt.Sprintf("JDK version %s not found", version))
 			utils.PrintInfo("Available JDK versions:")
 			showAvailableJDKs()
-			utils.PrintInfo(fmt.Sprintf("Use 'jvm download %s' to download this version", version))
+			utils.PrintInfo(fmt.Sprintf("Use 'jenvy download %s' to download this version", version))
 		} else if strings.Contains(err.Error(), "multiple matches found") {
 			utils.PrintError(fmt.Sprintf("Multiple JDK versions match '%s'", version))
 			utils.PrintInfo("Please be more specific with the version number")
-			utils.PrintInfo("Example: use 'jvm use 17.0.5' instead of 'jvm use 17'")
+			utils.PrintInfo("Example: use 'jenvy use 17.0.5' instead of 'jenvy use 17'")
 		} else if strings.Contains(err.Error(), "failed to get JVM directory") {
 			utils.PrintError("Unable to access JVM installation directory")
-			utils.PrintInfo("Make sure you have proper permissions and the .jvm directory exists")
+			utils.PrintInfo("Make sure you have proper permissions and the .jenvy directory exists")
 		} else {
 			utils.PrintError(fmt.Sprintf("Failed to locate JDK version %s: %v", version, err))
 		}
@@ -535,7 +535,7 @@ func ensureJavaHomeInPath() error {
 //
 // Struttura directory analizzata:
 //
-//	C:\Users\{user}\.jvm\versions\
+//	C:\Users\{user}\.jenvy\versions\
 //	├── JDK-17.0.5\     → Versione "17.0.5"
 //	├── JDK-21.0.2\     → Versione "21.0.2"
 //	├── JDK-8.0.392\    → Versione "8.0.392"
@@ -565,8 +565,8 @@ func ensureJavaHomeInPath() error {
 //	  - 8.0.392
 //
 // Messaggi speciali:
-//   - "No JDKs found. Use 'jvm download <version>' to install a JDK" - se directory vuota
-//   - "No valid JDKs found. Use 'jvm download <version>' to install a JDK" - se solo JDK corrotti
+//   - "No JDKs found. Use 'jenvy download <version>' to install a JDK" - se directory vuota
+//   - "No valid JDKs found. Use 'jenvy download <version>' to install a JDK" - se solo JDK corrotti
 //   - "Failed to get home directory: {error}" - se problemi accesso directory utente
 //
 // Utilizzo nei comandi:
@@ -587,7 +587,7 @@ func showAvailableJDKs() {
 
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
-		utils.PrintWarning("No JDKs found. Use 'jvm download <version>' to install a JDK")
+		utils.PrintWarning("No JDKs found. Use 'jenvy download <version>' to install a JDK")
 		return
 	}
 
@@ -603,7 +603,7 @@ func showAvailableJDKs() {
 	}
 
 	if len(jdks) == 0 {
-		utils.PrintWarning("No valid JDKs found. Use 'jvm download <version>' to install a JDK")
+		utils.PrintWarning("No valid JDKs found. Use 'jenvy download <version>' to install a JDK")
 		return
 	}
 
@@ -628,7 +628,7 @@ func showAvailableJDKs() {
 // Path testato:
 //
 //	{jdkPath}\bin\java.exe
-//	Esempio: "C:\Users\user\.jvm\versions\JDK-17\bin\java.exe"
+//	Esempio: "C:\Users\user\.jenvy\versions\JDK-17\bin\java.exe"
 //
 // Controlli limitati (per semplicità):
 //   - **Solo esistenza file**: Non esegue java.exe per test funzionalità
@@ -648,13 +648,13 @@ func showAvailableJDKs() {
 //
 // Output tipico successo:
 //
-//	Testing: C:\Users\user\.jvm\versions\JDK-17\bin\java.exe -version
+//	Testing: C:\Users\user\.jenvy\versions\JDK-17\bin\java.exe -version
 //	[SUCCESS] Java executable found and accessible
-//	Java location: C:\Users\user\.jvm\versions\JDK-17\bin\java.exe
+//	Java location: C:\Users\user\.jenvy\versions\JDK-17\bin\java.exe
 //
 // Output tipico errore:
 //
-//	Testing: C:\Users\user\.jvm\versions\JDK-17\bin\java.exe -version
+//	Testing: C:\Users\user\.jenvy\versions\JDK-17\bin\java.exe -version
 //	[ERROR] Java executable not found
 //
 // Miglioramenti futuri possibili:
@@ -721,14 +721,14 @@ func testJavaInstallation(jdkPath string) {
 //
 //	🔧 Setting up JVM environment variables...
 //	[SUCCESS] JVM environment initialized
-//	[INFO] Use 'jvm use <version>' to set your active JDK
+//	[INFO] Use 'jenvy use <version>' to set your active JDK
 //
 // Output senza privilegi admin:
 //
 //	🔧 Setting up JVM environment variables...
 //	[WARNING] For system-wide environment variables, run as Administrator
-//	[INFO] You can still use JVM, but 'jvm use' will require Administrator privileges
-//	[INFO] Use 'jvm use <version>' to set your active JDK
+//	[INFO] You can still use JVM, but 'jenvy use' will require Administrator privileges
+//	[INFO] Use 'jenvy use <version>' to set your active JDK
 //
 // Messaggi di errore possibili:
 //
@@ -750,7 +750,7 @@ func InitializeJVMEnvironment() {
 	// Check if running as administrator
 	if !isRunningAsAdmin() {
 		utils.PrintWarning("For system-wide environment variables, run as Administrator")
-		utils.PrintInfo("You can still use JVM, but 'jvm use' will require Administrator privileges")
+		utils.PrintInfo("You can still use JVM, but 'jenvy use' will require Administrator privileges")
 	} else {
 		// Ensure %JAVA_HOME%\\bin is in PATH (will be set when a JDK is selected)
 		err := ensureJavaHomeInPath()
@@ -762,7 +762,7 @@ func InitializeJVMEnvironment() {
 		}
 	}
 
-	utils.PrintInfo("Use 'jvm use <version>' to set your active JDK")
+	utils.PrintInfo("Use 'jenvy use <version>' to set your active JDK")
 }
 
 // isRunningAsAdmin verifica se il processo corrente ha privilegi di amministratore.

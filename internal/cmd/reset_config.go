@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 // ResetPrivateConfig esegue il reset completo della configurazione dei repository privati nel sistema Windows.
@@ -22,7 +22,7 @@ import (
 //
 // **Gestione sicurezza Windows:**
 // - Localizzazione sicura directory profilo utente Windows (%USERPROFILE%)
-// - Accesso controllato al file config.json nella directory .jvm
+// - Accesso controllato al file config.json nella directory .jenvy
 // - Verifica permessi Windows prima della rimozione
 // - Gestione sicura di file potenzialmente contenenti informazioni sensibili
 //
@@ -33,7 +33,7 @@ import (
 // - Supporto per sistemi Windows con policy di sicurezza restrittive
 //
 // **Operazioni di cleanup:**
-// - Rimozione file configurazione da %USERPROFILE%\.jvm\config.json
+// - Rimozione file configurazione da %USERPROFILE%\.jenvy\config.json
 // - Invalidazione cache credenziali associate
 // - Reset stato interno configurazione repository privati
 // - Logging operazione per audit trail Windows
@@ -55,10 +55,10 @@ func ResetPrivateConfig() {
 		return
 	}
 
-	configPath := filepath.Join(homeDir, ".jvm", "config.json")
-	jvmDir := filepath.Join(homeDir, ".jvm")
+	configPath := filepath.Join(homeDir, ".jenvy", "config.json")
+	jvmDir := filepath.Join(homeDir, ".jenvy")
 
-	// Verifica esistenza directory .jvm
+	// Verifica esistenza directory .jenvy
 	if _, err := os.Stat(jvmDir); os.IsNotExist(err) {
 		utils.PrintInfo("JVM configuration directory not found")
 		utils.PrintInfo("No private repository configuration exists to reset")
@@ -86,5 +86,5 @@ func ResetPrivateConfig() {
 
 	utils.PrintSuccess("Private repository configuration reset successfully")
 	utils.PrintInfo("All private repository settings have been cleared")
-	utils.PrintInfo("Use 'jvm configure private <URL>' to set up new repository")
+	utils.PrintInfo("Use 'jenvy configure private <URL>' to set up new repository")
 }

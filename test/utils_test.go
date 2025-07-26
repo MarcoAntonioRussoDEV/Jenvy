@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 // TestParseVersionNumber verifica il parsing delle versioni Java
@@ -166,12 +166,12 @@ func TestGetJVMVersionsDirectory(t *testing.T) {
 		t.Error("GetJVMVersionsDirectory() returned empty string")
 	}
 
-	// Verifica che il path contenga .jvm/versions
+	// Verifica che il path contenga .jenvy/versions
 	if !filepath.IsAbs(dir) {
 		t.Error("GetJVMVersionsDirectory() should return absolute path")
 	}
 
-	expectedSuffix := filepath.Join(".jvm", "versions")
+	expectedSuffix := filepath.Join(".jenvy", "versions")
 	if !strings.HasSuffix(dir, expectedSuffix) {
 		t.Errorf("GetJVMVersionsDirectory() = %q, should end with %q", dir, expectedSuffix)
 	}

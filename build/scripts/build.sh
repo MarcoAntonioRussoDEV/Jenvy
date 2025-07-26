@@ -1,5 +1,5 @@
 #!/bin/bash
-# build.sh - Script di build automatizzato per Java Version Manager (bash version)
+# build.sh - Script di build automatizzato per Jenvy - Developer Kit Manager (bash version)
 
 set -e  # Exit on any error
 
@@ -7,8 +7,8 @@ set -e  # Exit on any error
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-echo "🔧 Java Version Manager - Build Script"
-echo "======================================"
+echo "🔧 Jenvy - Developer Kit Manager - Build Script"
+echo "==============================================="
 
 echo "► Running tests..."
 # Esegui i test dalla directory root del progetto
@@ -21,30 +21,30 @@ else
 fi
 
 echo ""
-echo "► Building jvm.exe..."
-if (cd "$PROJECT_ROOT" && go build -o build/dist/jvm.exe ./main.go); then
-    echo "✅ jvm.exe compilato con successo"
+echo "► Building jenvy.exe..."
+if (cd "$PROJECT_ROOT" && go build -o build/dist/jenvy.exe ./main.go); then
+    echo "✅ jenvy.exe compilato con successo"
 else
     echo "❌ Build fallito: go build ha restituito errore $?"
     exit 1
 fi
 
-if [ ! -f "$PROJECT_ROOT/build/dist/jvm.exe" ]; then
-    echo "❌ Build fallito: jvm.exe non trovato dopo la compilazione"
+if [ ! -f "$PROJECT_ROOT/build/dist/jenvy.exe" ]; then
+    echo "❌ Build fallito: jenvy.exe non trovato dopo la compilazione"
     exit 1
 fi
 
-# Step 2: Sign jvm.exe with certificate (optional on Windows)
+# Step 2: Sign jenvy.exe with certificate (optional on Windows)
 SIGNTOOL="/c/Program Files (x86)/Windows Kits/10/bin/x64/signtool.exe"
 if [ -f "$SIGNTOOL" ]; then
-    echo "► Signing jvm.exe..."
-    if "$SIGNTOOL" sign /f "$PROJECT_ROOT/build/installer/jvm-dev-cert.pfx" /p jvm-password /tr http://timestamp.digicert.com /td sha256 "$PROJECT_ROOT/build/dist/jvm.exe"; then
-        echo "✅ jvm.exe firmato con successo"
+    echo "► Signing jenvy.exe..."
+    if "$SIGNTOOL" sign /f "$PROJECT_ROOT/build/installer/jenvy-dev-cert.pfx" /p jenvy-password /tr http://timestamp.digicert.com /td sha256 "$PROJECT_ROOT/build/dist/jenvy.exe"; then
+        echo "✅ jenvy.exe firmato con successo"
     else
         echo "⚠️ Firma fallita ma continuo (errore $?)"
     fi
 else
-    echo "⚠️ SignTool non trovato. Salta firma di jvm.exe."
+    echo "⚠️ SignTool non trovato. Salta firma di jenvy.exe."
 fi
 
 echo ""
@@ -53,18 +53,18 @@ echo "💡 Se hai VS Code aperto con file dalla cartella distribution, chiudilo 
 sleep 5
 
 # Remove old installer if exists
-if [ -f "$PROJECT_ROOT/build/dist/jvm-installer.exe" ]; then
+if [ -f "$PROJECT_ROOT/build/dist/jenvy-installer.exe" ]; then
     echo "🗑️ Rimuovo il vecchio installer..."
-    if rm -f "$PROJECT_ROOT/build/dist/jvm-installer.exe"; then
+    if rm -f "$PROJECT_ROOT/build/dist/jenvy-installer.exe"; then
         echo "✅ Vecchio installer rimosso"
     else
         echo "⚠️ Non posso rimuovere il vecchio installer (potrebbe essere in uso)"
     fi
 fi
 
-# Check if jvm.exe is in use
-if lsof "$PROJECT_ROOT/build/dist/jvm.exe" 2>/dev/null; then
-    echo "❌ ERRORE: jvm.exe è ancora in uso da un altro processo"
+# Check if jenvy.exe is in use
+if lsof "$PROJECT_ROOT/build/dist/jenvy.exe" 2>/dev/null; then
+    echo "❌ ERRORE: jenvy.exe è ancora in uso da un altro processo"
     echo "💡 Chiudi tutti i terminali, VS Code e altri processi che potrebbero usare il file"
     echo "💡 Oppure riavvia il sistema e riprova"
     exit 1
@@ -130,9 +130,9 @@ fi
 echo ""
 echo "🎉 Build completo! Controlla la cartella build/dist/"
 echo "📦 File generati:"
-echo "   - jvm.exe (eseguibile principale)"
-echo "   - jvm-installer.exe (installer)"
+echo "   - jenvy.exe (eseguibile principale)"
+echo "   - jenvy-installer.exe (installer)"
 echo ""
 echo "🚀 Esempi di test:"
-echo "   ./build/dist/jvm.exe remote-list"
-echo "   ./build/dist/jvm-installer.exe /CONFIGURE_PRIVATE=0"
+echo "   ./build/dist/jenvy.exe remote-list"
+echo "   ./build/dist/jenvy-installer.exe /CONFIGURE_PRIVATE=0"

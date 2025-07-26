@@ -15,8 +15,8 @@ import (
 //
 // Processo di configurazione:
 // 1. **Localizzazione directory home**: Ottiene directory utente Windows
-// 2. **Creazione directory config**: Assicura esistenza di ~/.jvm/
-// 3. **Costruzione file config**: Percorso C:\Users\username\.jvm\config.json
+// 2. **Creazione directory config**: Assicura esistenza di ~/.jenvy/
+// 3. **Costruzione file config**: Percorso C:\Users\username\.jenvy\config.json
 // 4. **Struttura configurazione**: Mappa endpoint e token in formato JSON
 // 5. **Scrittura sicura**: Salva configurazione con formattazione leggibile
 // 6. **Validazione risultato**: Conferma successo operazione all'utente
@@ -47,7 +47,7 @@ import (
 //   - Gestione graceful: non corrompe configurazioni esistenti in caso di errore
 //
 // Side effects:
-//   - Crea directory ~/.jvm/ se non esistente
+//   - Crea directory ~/.jenvy/ se non esistente
 //   - Sovrascrive completamente config.json esistente (backup non automatico)
 //   - Stampa messaggi di stato e risultato su stdout
 //
@@ -65,10 +65,10 @@ import (
 // Esempio di utilizzo:
 //
 //	ConfigurePrivateRepo("https://nexus.company.com/api/jdk", "abc123token")
-//	// Risultato: File config.json creato in C:\Users\username\.jvm\config.json
+//	// Risultato: File config.json creato in C:\Users\username\.jenvy\config.json
 func ConfigurePrivateRepo(endpoint string, token string) {
 	// Ottiene la directory home dell'utente Windows corrente
-	// Necessaria per localizzare la cartella di configurazione ~/.jvm
+	// Necessaria per localizzare la cartella di configurazione ~/.jenvy
 	home, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("[ERROR] Unable to determine user directory:", err)
@@ -76,15 +76,15 @@ func ConfigurePrivateRepo(endpoint string, token string) {
 	}
 
 	// Costruisce il percorso della directory di configurazione JVM
-	// Su Windows: C:\Users\username\.jvm
-	dir := filepath.Join(home, ".jvm")
+	// Su Windows: C:\Users\username\.jenvy
+	dir := filepath.Join(home, ".jenvy")
 
 	// Crea ricorsivamente la directory di configurazione se non esiste
 	// Permessi 0755: full access per owner, read+execute per altri
 	os.MkdirAll(dir, 0755)
 
 	// Costruisce il percorso completo del file di configurazione
-	// Risultato: C:\Users\username\.jvm\config.json
+	// Risultato: C:\Users\username\.jenvy\config.json
 	path := filepath.Join(dir, "config.json")
 
 	// Crea la struttura di configurazione come mappa string-string

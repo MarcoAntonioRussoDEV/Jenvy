@@ -1,7 +1,7 @@
 package liberica
 
 import (
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 	"sort"
 )
 

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 // ShowCurrentConfig visualizza la configurazione corrente dei repository privati nel sistema Windows.
@@ -24,7 +24,7 @@ import (
 //
 // **Gestione sicurezza Windows:**
 // - Accesso controllato al profilo utente Windows (%USERPROFILE%)
-// - Lettura sicura del file config.json dalla directory .jvm
+// - Lettura sicura del file config.json dalla directory .jenvy
 // - Gestione permessi Windows per file di configurazione
 // - Protezione da accesso non autorizzato a credenziali sensibili
 //
@@ -69,14 +69,14 @@ func ShowCurrentConfig() {
 		return
 	}
 
-	configPath := filepath.Join(homeDir, ".jvm", "config.json")
-	jvmDir := filepath.Join(homeDir, ".jvm")
+	configPath := filepath.Join(homeDir, ".jenvy", "config.json")
+	jvmDir := filepath.Join(homeDir, ".jenvy")
 
-	// Verifica esistenza directory .jvm
+	// Verifica esistenza directory .jenvy
 	if _, err := os.Stat(jvmDir); os.IsNotExist(err) {
 		utils.PrintInfo("JVM configuration directory not found")
 		utils.PrintInfo("No private repository has been configured yet")
-		utils.PrintInfo("Use 'jvm configure private <URL>' to set up a repository")
+		utils.PrintInfo("Use 'jenvy configure private <URL>' to set up a repository")
 		return
 	}
 
@@ -84,7 +84,7 @@ func ShowCurrentConfig() {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		utils.PrintInfo("Private repository configuration not found")
 		utils.PrintInfo("No configuration file exists")
-		utils.PrintInfo("Use 'jvm configure private <URL>' to set up a repository")
+		utils.PrintInfo("Use 'jenvy configure private <URL>' to set up a repository")
 		return
 	}
 
@@ -107,8 +107,8 @@ func ShowCurrentConfig() {
 	if err != nil {
 		utils.PrintError(fmt.Sprintf("Configuration file parsing error: %v", err))
 		utils.PrintInfo("The configuration file appears to be corrupted")
-		utils.PrintInfo("Consider using 'jvm reset-config' to reset configuration")
-		utils.PrintInfo("Then reconfigure with 'jvm configure private <URL>'")
+		utils.PrintInfo("Consider using 'jenvy reset-config' to reset configuration")
+		utils.PrintInfo("Then reconfigure with 'jenvy configure private <URL>'")
 		return
 	}
 
@@ -116,7 +116,7 @@ func ShowCurrentConfig() {
 	if len(cfg) == 0 {
 		utils.PrintInfo("Configuration file is empty")
 		utils.PrintInfo("No private repository settings found")
-		utils.PrintInfo("Use 'jvm configure private <URL>' to set up a repository")
+		utils.PrintInfo("Use 'jenvy configure private <URL>' to set up a repository")
 		return
 	}
 
@@ -148,6 +148,6 @@ func ShowCurrentConfig() {
 	}
 
 	fmt.Println()
-	utils.PrintInfo("Use 'jvm reset-config' to clear configuration")
-	utils.PrintInfo("Use 'jvm configure private <URL>' to update repository")
+	utils.PrintInfo("Use 'jenvy reset-config' to clear configuration")
+	utils.PrintInfo("Use 'jenvy configure private <URL>' to update repository")
 }

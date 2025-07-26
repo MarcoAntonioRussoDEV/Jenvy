@@ -1,31 +1,31 @@
 [Setup]
-AppName=Java Version Manager
+AppName=Jenvy - Developer Kit Manager
 AppVersion=1.0
-DefaultDirName={autopf}\JVM
-DefaultGroupName=Java Version Manager
+DefaultDirName={autopf}\Jenvy
+DefaultGroupName=Jenvy - Developer Kit Manager
 DisableProgramGroupPage=yes
-OutputBaseFilename=jvm-installer
+OutputBaseFilename=jenvy-installer
 OutputDir=..\..\build\dist
 ChangesEnvironment=yes
 PrivilegesRequired=admin
 
-SetupIconFile=..\..\assets\icons\jvm.ico
-WizardImageFile=..\..\assets\splash\jvm_splash.bmp
-WizardSmallImageFile=..\..\assets\splash\jvm_splash_small.bmp
+SetupIconFile=..\..\assets\icons\jenvy.ico
+WizardImageFile=..\..\assets\splash\jenvy_splash.bmp
+WizardSmallImageFile=..\..\assets\splash\jenvy_splash_small.bmp
 
 ; Command line parameters
 ; /CONFIGURE_PRIVATE=1  - Enable private repository configuration
 ; /CONFIGURE_PRIVATE=0  - Skip private repository configuration
 
 [Files]
-Source: "..\dist\jvm.exe";               DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\jenvy.exe";               DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\README.md";               DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 ; PATH viene gestito nella sezione [Code] per un controllo più preciso
 
 [Tasks]
-Name: "addtopath"; Description: "Add JVM to system PATH"; GroupDescription: "Additional configuration:"
+Name: "addtopath"; Description: "Add Jenvy to system PATH"; GroupDescription: "Additional configuration:"
 
 [Run]
 Filename: "notepad.exe"; Parameters: """{app}\README.md"""; Description: "📘 Open README"; Flags: postinstall shellexec unchecked
@@ -49,11 +49,11 @@ begin
   // Check if configuring private repository (default: True)
   ConfigurePrivate := StrToIntDef(ExpandConstant('{param:CONFIGURE_PRIVATE|1}'), 1) = 1;
   
-  // Check for existing JVM installation
-  if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Java Version Manager_is1', 'InstallLocation', ExistingInstallPath) or
-     RegQueryStringValue(HKCU, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Java Version Manager_is1', 'InstallLocation', ExistingInstallPath) then
+  // Check for existing jenvy installation
+  if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Jenvy - Developer Kit Manager_is1', 'InstallLocation', ExistingInstallPath) or
+     RegQueryStringValue(HKCU, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Jenvy - Developer Kit Manager_is1', 'InstallLocation', ExistingInstallPath) then
   begin
-    if MsgBox('An existing Java Version Manager installation has been detected at:' + #13#10 + 
+    if MsgBox('An existing Jenvy - Developer Kit Manager installation has been detected at:' + #13#10 + 
               ExistingInstallPath + #13#10#13#10 + 
               'Do you want to uninstall it first and proceed with a fresh installation?' + #13#10 +
               '(Recommended to avoid conflicts)', mbConfirmation, MB_YESNO) = IDYES then
@@ -70,7 +70,7 @@ begin
   // Initial welcome page
   WelcomePage := CreateOutputMsgPage(
     wpWelcome,
-    '☕ Welcome to Java Version Manager',
+    '☕ Welcome to Jenvy - Developer Kit Manager',
     'An elegant tool for managing OpenJDK versions',
     '🚀 Key Features:' + #13#10 +
     '• List JDK from Adoptium, Azul, Liberica' + #13#10 +
@@ -78,13 +78,13 @@ begin
     '• Smart version selection (LTS priority)' + #13#10 +
     '• CLI interface with formatted tables' + #13#10 +
     '• Download and manage JDK versions' + #13#10 + #13#10 +
-    '📦 After installation you can use the "jvm" command from any terminal.' + #13#10 + #13#10 +
+    '📦 After installation you can use the "jenvy" command from any terminal.' + #13#10 + #13#10 +
     '🔧 Usage examples:' + #13#10 +
-    '  jvm remote-list' + #13#10 +
-    '  jvm download 17' + #13#10 +
-    '  jvm list' + #13#10 +
-    '  jvm remote-list --provider=azul' + #13#10 +
-    '  jvm remote-list --all'
+    '  jenvy remote-list' + #13#10 +
+    '  jenvy download 17' + #13#10 +
+    '  jenvy list' + #13#10 +
+    '  jenvy remote-list --provider=azul' + #13#10 +
+    '  jenvy remote-list --all'
   );
 
   // Private repository configuration page (conditional)
@@ -94,9 +94,9 @@ begin
       wpSelectDir,
       '🔒 Private Repository Configuration',
       'Configure access to your enterprise repository',
-      'These parameters will be saved to %USERPROFILE%\.jvm\config.json' + #13#10 + #13#10 +
+      'These parameters will be saved to %USERPROFILE%\.jenvy\config.json' + #13#10 + #13#10 +
       '⚠️ You can leave empty to configure later with:' + #13#10 +
-      '   jvm configure-private <endpoint> [token]'
+      '   jenvy configure-private <endpoint> [token]'
     );
     InputPage.Add('Repository endpoint (e.g. https://nexus.company.com/api/jdk):', False);
     InputPage.Add('Access token (optional):', False);
@@ -115,7 +115,7 @@ begin
     // Clean PATH from duplicates first
     CleanupPATH();
     
-    // Add JVM to PATH if not already present
+    // Add jenvy to PATH if not already present
     if NeedsAddPath(ExpandConstant('{app}')) then
     begin
       if RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'PATH', CurrentPath) then
@@ -131,7 +131,7 @@ begin
     end;
     
     // Install shell completions for all available shells
-    Exec(ExpandConstant('{app}\jvm.exe'), 'completion --install-all', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{app}\jenvy.exe'), 'completion --install-all', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     
     // Configure private repository if requested
     if ConfigurePrivate then
@@ -150,8 +150,8 @@ begin
           '  "private_token": "'   + Token    + '"'  + #13#10 +
           '}';
 
-        // Save to %USERPROFILE%\.jvm\config.json
-        ConfigPath := ExpandConstant('{%USERPROFILE}\.jvm\config.json');
+        // Save to %USERPROFILE%\.jenvy\config.json
+        ConfigPath := ExpandConstant('{%USERPROFILE}\.jenvy\config.json');
         ForceDirectories(ExtractFileDir(ConfigPath));
         SaveStringToFile(ConfigPath, JSON, False);
       end;

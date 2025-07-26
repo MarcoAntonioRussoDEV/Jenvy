@@ -1,7 +1,7 @@
 package azul
 
 import (
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 	"sort"
 )
 

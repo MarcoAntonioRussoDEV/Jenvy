@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,7 +21,7 @@ import (
 // - Completamento flag (--provider, --all, --latest, etc.)
 // - Completamento versioni JDK installate per comandi 'use' e 'remove'
 // - Completamento intelligente del flag --all per 'remove'
-// - Fallback su versioni comuni se 'jvm list' non è disponibile
+// - Fallback su versioni comuni se 'jenvy list' non è disponibile
 //
 // Utilizzo:
 //
@@ -36,7 +36,7 @@ import (
 //   - Cygwin Bash
 //
 // Note tecniche:
-//   - Usa grep e sed per parsing output di 'jvm list'
+//   - Usa grep e sed per parsing output di 'jenvy list'
 //   - Limita risultati a 20 versioni per performance
 //   - Gestisce fallback sicuro se il comando jvm non è disponibile
 //   - Script autocontenuto senza dipendenze esterne bash-completion
@@ -152,7 +152,7 @@ _jvm_completion() {
             return 0
             ;;
         extract|ex)
-            # Complete with available archive versions from ~/.jvm/versions
+            # Complete with available archive versions from ~/.jenvy/versions
             if command -v jvm >/dev/null 2>&1; then
                 local available_archives=$(jvm extract 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
                 if [[ -n "$available_archives" ]]; then
@@ -201,7 +201,7 @@ complete -F _jvm_completion jvm
 //
 // Tecnologie utilizzate:
 //   - Register-ArgumentCompleter: API nativa PowerShell per completamento
-//   - Select-String: Parsing efficiente dell'output di 'jvm list'
+//   - Select-String: Parsing efficiente dell'output di 'jenvy list'
 //   - Try-Catch: Gestione errori robusta
 //   - Where-Object: Filtering veloce dei risultati
 //
@@ -224,7 +224,7 @@ complete -F _jvm_completion jvm
 //	string - Script PowerShell completo pronto per l'installazione
 //
 // Note di implementazione:
-//   - Usa regex per estrazione versioni JDK dall'output di 'jvm list'
+//   - Usa regex per estrazione versioni JDK dall'output di 'jenvy list'
 //   - Gestisce sia versioni numeriche che flag speciali (--all)
 //   - Implementa logica di completamento contestuale basata sulla posizione
 func GeneratePowerShellCompletion() string {
@@ -291,7 +291,7 @@ func GenerateCmdCompletion() string {
 // 5. **Fallback robusto**: Versioni predefinite se query fallisce
 //
 // Logica di completamento per comando:
-//   - use/u: Versioni JDK installate (da 'jvm list')
+//   - use/u: Versioni JDK installate (da 'jenvy list')
 //   - remove/rm: Versioni installate + flag --all
 //   - download/dl: Versioni comuni (8, 11, 17, 21, 23, 24)
 //   - --provider: Lista provider (adoptium, azul, liberica, private)
@@ -425,7 +425,7 @@ complete -F _jvm_completion jvm
 // 5. **Performance ottimizzata**: Filtering efficiente con Where-Object
 //
 // Funzionalità avanzate implementate:
-//   - **Query dinamica versioni**: Esecuzione sicura di 'jvm list' per versioni reali
+//   - **Query dinamica versioni**: Esecuzione sicura di 'jenvy list' per versioni reali
 //   - **Regex avanzata**: Estrazione precisa versioni con Select-String
 //   - **Completamento ibrido**: Combina versioni installate e flag speciali
 //   - **Fallback intelligente**: Versioni predefinite se query fallisce
@@ -649,7 +649,7 @@ if "%1"=="jvm" (
 //
 // Side effects:
 //   - Modifica file di configurazione shell (~/.bashrc, $PROFILE)
-//   - Crea file di aiuto per CMD (~/.jvm_cmd_help.bat)
+//   - Crea file di aiuto per CMD (~/.jenvy_cmd_help.bat)
 //   - Stampa informazioni di stato e istruzioni utente
 func InstallCompletionForAllShells() {
 	utils.PrintInfo("Installing completion scripts for all available shells...")
@@ -887,7 +887,7 @@ func installPowerShellCompletion() error {
 //
 // Strategia di workaround per limitazioni CMD:
 // 1. **Creazione script aiuto**: File .bat con documentazione completa
-// 2. **Posizionamento home directory**: ~/.jvm_cmd_help.bat per accesso facile
+// 2. **Posizionamento home directory**: ~/.jenvy_cmd_help.bat per accesso facile
 // 3. **Documentazione integrata**: Tutti i comandi e sintassi in un file
 // 4. **Suggerimento alias**: Istruzioni per creare alias DOS con doskey
 // 5. **Riferimento permanente**: File sempre disponibile per consultazione
@@ -900,14 +900,14 @@ func installPowerShellCompletion() error {
 //   - Troubleshooting e suggerimenti
 //
 // Workflow utente suggerito:
-// 1. Installazione automatica crea ~/.jvm_cmd_help.bat
+// 1. Installazione automatica crea ~/.jenvy_cmd_help.bat
 // 2. Utente esegue comando doskey suggerito per creare alias
 // 3. Alias "jvm-help" diventa disponibile in tutte le sessioni CMD
 // 4. Utente può consultare aiuto con "jvm-help" quando necessario
 //
 // Comando alias suggerito:
 //
-//	doskey jvm-help=C:\Users\username\.jvm_cmd_help.bat jvm $*
+//	doskey jvm-help=C:\Users\username\.jenvy_cmd_help.bat jvm $*
 //
 // Vantaggi dell'approccio:
 //   - Soluzione nativa CMD senza dipendenze esterne
@@ -930,7 +930,7 @@ func installPowerShellCompletion() error {
 //	error - nil se creazione script riuscita, errore specifico altrimenti
 //
 // Side effects:
-//   - Crea file ~/.jvm_cmd_help.bat nella home directory
+//   - Crea file ~/.jenvy_cmd_help.bat nella home directory
 //   - Stampa istruzioni per configurazione alias DOS
 //   - Sovrascrive file esistente se presente (aggiornamento)
 //
@@ -945,7 +945,7 @@ func installCmdCompletion() error {
 		return fmt.Errorf("getting home directory: %v", err)
 	}
 
-	cmdHelpPath := filepath.Join(homeDir, ".jvm_cmd_help.bat")
+	cmdHelpPath := filepath.Join(homeDir, ".jenvy_cmd_help.bat")
 
 	script := generateCmdScript()
 

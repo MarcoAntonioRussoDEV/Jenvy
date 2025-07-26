@@ -10,17 +10,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"jvm/internal/utils"
+	"jenvy/internal/utils"
 )
 
 // ExtractJDK gestisce l'estrazione di archivi JDK scaricati nel sistema Windows.
 //
 // Questa funzione implementa un sistema completo di estrazione per archivi JDK
-// scaricati tramite il comando 'jvm download', con ottimizzazioni specifiche per l'ambiente Windows:
+// scaricati tramite il comando 'jenvy download', con ottimizzazioni specifiche per l'ambiente Windows:
 //
 // **Funzionalità principali:**
 // - Lista automatica di archivi JDK disponibili se chiamata senza argomenti
-// - Estrazione archivi JDK dalla directory ~/.jvm/versions
+// - Estrazione archivi JDK dalla directory ~/.jenvy/versions
 // - **Parsing intelligente versioni**: Supporta sia nomi completi che parziali
 // - Rilevamento intelligente del tipo di archivio basato su estensione
 // - Gestione percorsi Windows con caratteri speciali e spazi
@@ -48,8 +48,8 @@ import (
 // - Supporto percorsi lunghi Windows (>260 caratteri)
 //
 // **Integrazione con download:**
-// - Funziona solo con archivi scaricati tramite 'jvm download'
-// - Riconosce la struttura ~/.jvm/versions/JDK-version/archive.zip
+// - Funziona solo con archivi scaricati tramite 'jenvy download'
+// - Riconosce la struttura ~/.jenvy/versions/JDK-version/archive.zip
 // - Estrae direttamente nella directory JDK appropriata
 //
 // **Sintassi comando:**
@@ -75,7 +75,7 @@ func ExtractJDK() {
 		return
 	}
 
-	versionsDir := filepath.Join(homeDir, ".jvm", "versions")
+	versionsDir := filepath.Join(homeDir, ".jenvy", "versions")
 
 	// Se nessun argomento, mostra archivi disponibili
 	if len(os.Args) < 3 {
@@ -145,12 +145,12 @@ func ExtractJDK() {
 
 	utils.PrintSuccess(fmt.Sprintf("JDK extracted successfully: %s", actualVersion))
 	utils.PrintInfo(fmt.Sprintf("Location: %s", jdkDir))
-	utils.PrintInfo("Use 'jvm use " + actualVersion + "' to activate this JDK")
+	utils.PrintInfo("Use 'jenvy use " + actualVersion + "' to activate this JDK")
 }
 
 // showAvailableArchives mostra la lista di archivi JDK disponibili per l'estrazione.
 //
-// Questa funzione scansiona la directory ~/.jvm/versions alla ricerca di directory
+// Questa funzione scansiona la directory ~/.jenvy/versions alla ricerca di directory
 // JDK che contengono archivi non ancora estratti. Fornisce un'interfaccia user-friendly
 // per visualizzare i JDK scaricati e pronti per l'estrazione.
 //
@@ -172,7 +172,7 @@ func showAvailableArchives(versionsDir string) {
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
 		utils.PrintError(fmt.Sprintf("Cannot access versions directory: %v", err))
-		utils.PrintInfo("Make sure to download JDKs first using 'jvm download <version>'")
+		utils.PrintInfo("Make sure to download JDKs first using 'jenvy download <version>'")
 		return
 	}
 
@@ -206,7 +206,7 @@ func showAvailableArchives(versionsDir string) {
 	}
 
 	if len(availableArchives) == 0 && len(extractedJDKs) == 0 {
-		utils.PrintInfo("No JDK versions found in ~/.jvm/versions")
+		utils.PrintInfo("No JDK versions found in ~/.jenvy/versions")
 		utils.PrintInfo("Download JDKs first using:")
 		utils.PrintInfo("  jvm remote-list          # See available versions")
 		utils.PrintInfo("  jvm download <version>   # Download a JDK")
@@ -275,8 +275,8 @@ func showAvailableArchives(versionsDir string) {
 //
 // Esempi di utilizzo:
 //
-//	path, err := findJDKWithArchive("/home/user/.jvm/versions", "17")
-//	// path = "/home/user/.jvm/versions/JDK-17.0.8.1+1" (se ha archivio)
+//	path, err := findJDKWithArchive("/home/user/.jenvy/versions", "17")
+//	// path = "/home/user/.jenvy/versions/JDK-17.0.8.1+1" (se ha archivio)
 //
 // Differenze da utils.FindSingleJDKInstallation:
 //   - Filtra solo JDK con archivi disponibili

@@ -13,7 +13,7 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
     home, _ := os.UserHomeDir()
-    path := filepath.Join(home, ".jvm", "config.json")
+    path := filepath.Join(home, ".jenvy", "config.json")
     file, err := os.Open(path)
     if err != nil {
         return nil, err

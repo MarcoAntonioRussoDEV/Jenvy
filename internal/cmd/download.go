@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"jvm/internal/providers/adoptium"
-	"jvm/internal/providers/azul"
-	"jvm/internal/providers/liberica"
-	"jvm/internal/providers/private"
-	"jvm/internal/utils"
+	"jenvy/internal/providers/adoptium"
+	"jenvy/internal/providers/azul"
+	"jenvy/internal/providers/liberica"
+	"jenvy/internal/providers/private"
+	"jenvy/internal/utils"
 )
 
 // RuntimeInfo rappresenta le informazioni di sistema operativo e architettura per Windows.
@@ -177,7 +177,7 @@ func shouldPreferVersion(version1, version2 string) bool {
 // Processo completo di download:
 // 1. **Parsing argomenti**: Analizza versione target e opzioni da riga di comando
 // 2. **Risoluzione provider**: Determina provider (adoptium, azul, liberica, private)
-// 3. **Configurazione directory**: Setup directory download (~/.jvm/versions)
+// 3. **Configurazione directory**: Setup directory download (~/.jenvy/versions)
 // 4. **Ricerca versione**: Query provider per trovare versione compatibile
 // 5. **Conferma utente**: Richiede approvazione prima del download
 // 6. **Download file**: Scarica archivio JDK con progress indicator
@@ -210,7 +210,7 @@ func shouldPreferVersion(version1, version2 string) bool {
 //   - Istruzioni step-by-step per prossimi passi
 //
 // Gestione directory:
-//   - Default: C:\Users\username\.jvm\versions\JDK-{version}\
+//   - Default: C:\Users\username\.jenvy\versions\JDK-{version}\
 //   - Struttura: Una directory per versione per isolamento
 //   - Creazione automatica di directory mancanti
 //   - Estrazione con flattening di directory annidate
@@ -233,7 +233,7 @@ func shouldPreferVersion(version1, version2 string) bool {
 //   - Continuazione con warning se estrazione fallisce
 //
 // Side effects:
-//   - Crea directory ~/.jvm/versions/ se non esiste
+//   - Crea directory ~/.jenvy/versions/ se non esiste
 //   - Scarica file archivio JDK nella directory versione
 //   - Estrae e organizza file JDK per uso immediato
 //   - Stampa informazioni dettagliate su stdout
@@ -249,14 +249,14 @@ func shouldPreferVersion(version1, version2 string) bool {
 //
 //	DownloadJDK("adoptium")
 //	// Con args: ["17", "--provider=azul"]
-//	// Risultato: JDK 17 Azul scaricato in ~/.jvm/versions/JDK-17.x.y/
+//	// Risultato: JDK 17 Azul scaricato in ~/.jenvy/versions/JDK-17.x.y/
 func DownloadJDK(defaultProvider string) {
 
 	// Parse command line arguments
 	args := os.Args[2:] // Skip "download"
 	if len(args) == 0 {
 		utils.PrintError("No JDK version specified")
-		utils.PrintInfo("Usage: jvm download <version> [options]")
+		utils.PrintInfo("Usage: jenvy download <version> [options]")
 		utils.PrintInfo("Examples:")
 		fmt.Println("  jvm download 17          # Download JDK 17")
 		fmt.Println("  jvm download 21.0.5      # Download specific version")
@@ -267,7 +267,7 @@ func DownloadJDK(defaultProvider string) {
 	version := args[0]
 	provider := defaultProvider
 
-	// Get default download directory: ~/.jvm/versions
+	// Get default download directory: ~/.jenvy/versions
 	outputDir, dirErr := getDefaultDownloadDir()
 	if dirErr != nil {
 		utils.PrintError(fmt.Sprintf("Failed to determine download directory: %v", dirErr))
@@ -341,7 +341,7 @@ func DownloadJDK(defaultProvider string) {
 
 	if downloadURL == "" {
 		fmt.Printf("[ERROR] JDK version %s not found in %s provider\n", version, provider)
-		fmt.Println("[INFO] Try running 'jvm remote-list' to see available versions")
+		fmt.Println("[INFO] Try running 'jenvy remote-list' to see available versions")
 		return
 	}
 
@@ -503,7 +503,7 @@ func DownloadJDK(defaultProvider string) {
 //
 // Esempio di utilizzo:
 //
-//	err := downloadFile("https://adoptium.net/...jdk-17.zip", "C:/Users/user/.jvm/versions/JDK-17/jdk.zip")
+//	err := downloadFile("https://adoptium.net/...jdk-17.zip", "C:/Users/user/.jenvy/versions/JDK-17/jdk.zip")
 //	if err != nil {
 //	    log.Printf("Download failed: %v", err)
 //	}
@@ -602,7 +602,7 @@ func downloadFile(url, filepath string) error {
 //
 // Struttura directory predefinita:
 //
-//	C:\Users\{username}\.jvm\versions\
+//	C:\Users\{username}\.jenvy\versions\
 //	├── JDK-17.0.5\          # Versione specifica JDK
 //	│   ├── bin\             # Eseguibili JDK
 //	│   ├── lib\             # Librerie JDK
@@ -612,7 +612,7 @@ func downloadFile(url, filepath string) error {
 //
 // Processo di determinazione:
 // 1. **Rilevamento utente corrente**: Usa user.Current() per ottenere info utente
-// 2. **Costruzione percorso**: Combina HomeDir + ".jvm" + "versions"
+// 2. **Costruzione percorso**: Combina HomeDir + ".jenvy" + "versions"
 // 3. **Normalizzazione path**: Usa filepath.Join per compatibilità Windows
 // 4. **Validazione**: Verifica accessibilità directory home
 //
@@ -634,7 +634,7 @@ func downloadFile(url, filepath string) error {
 //
 // Restituisce:
 //
-//	string - Percorso assoluto directory download (~/.jvm/versions)
+//	string - Percorso assoluto directory download (~/.jenvy/versions)
 //	error  - nil se successo, errore se impossibile determinare directory home
 //
 // Compatibilità Windows:
@@ -649,7 +649,7 @@ func downloadFile(url, filepath string) error {
 //	if err != nil {
 //	    downloadDir = "./downloads" // fallback
 //	}
-//	// downloadDir = "C:\Users\Marco\.jvm\versions"
+//	// downloadDir = "C:\Users\Marco\.jenvy\versions"
 //
 // Integrazione con JVM:
 //   - Usata da comando download per destinazione automatica
@@ -662,7 +662,7 @@ func getDefaultDownloadDir() (string, error) {
 		return "", fmt.Errorf("getting current user: %w", err)
 	}
 
-	jvmDir := filepath.Join(currentUser.HomeDir, ".jvm", "versions")
+	jvmDir := filepath.Join(currentUser.HomeDir, ".jenvy", "versions")
 	return jvmDir, nil
 }
 
@@ -1021,7 +1021,7 @@ func findLibericaDownload(releases []liberica.LibericaRelease, version string) (
 // findPrivateDownload ricerca downloads da repository privati configurati dall'utente.
 //
 // Gestisce repository JDK aziendali interni come Nexus, Artifactory o API custom,
-// utilizzando configurazione da ~/.jvm/config.json per autenticazione e endpoint.
+// utilizzando configurazione da ~/.jenvy/config.json per autenticazione e endpoint.
 //
 // Caratteristiche repository privati:
 //   - **Autenticazione**: Token-based per accesso sicuro
@@ -1160,7 +1160,7 @@ func findPrivateDownload(releases []private.PrivateRelease, version string) (str
 //
 // Esempio di utilizzo:
 //
-//	err := extractJDKArchive("JDK-17.0.8+9", "/home/user/.jvm/versions/JDK-17.0.8+9")
+//	err := extractJDKArchive("JDK-17.0.8+9", "/home/user/.jenvy/versions/JDK-17.0.8+9")
 func extractJDKArchive(jdkDirName, jdkPath string) error {
 	// Find archive in directory
 	archivePath, err := findArchiveInDirectory(jdkPath)
