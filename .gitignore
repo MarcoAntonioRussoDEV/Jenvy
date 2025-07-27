@@ -11,8 +11,12 @@ launch.json
 # Design files (keep source files, ignore exports)
 assets/images/jenvy.psd
 assets/images/jenvy.svg
-assets/icons/jenvy.png
+assets\icons\jenvy.svg
+assets\PSD
 
 # Temporary files
 *.tmp
 *.log
+
+# Examples
+config

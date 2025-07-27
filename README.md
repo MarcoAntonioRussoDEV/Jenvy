@@ -1,144 +1,152 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # Jenvy - Developer Kit Manager
 
-**Una soluzione professionale per la gestione centralizzata delle distribuzioni OpenJDK**
-
-Jenvy è un'applicazione a riga di comando progettata per semplificare l'installazione, la gestione e il passaggio tra diverse versioni di OpenJDK su sistemi Windows. Il tool supporta i principali provider pubblici (Adoptium, Azul Zulu, BellSoft Liberica) e repository privati aziendali.
-
-> **⚠️ Importante:** Questo è un progetto open source personale e indipendente. Non sono affiliato con Oracle Corporation o con i suoi prodotti. Jenvy è un tool di gestione per distribuzioni OpenJDK di terze parti e non include, distribuisce o modifica alcun software Oracle.
-
----
-
-## Funzionalità Principali
-
-### Gestione Multi-Provider
-
--   **Provider Pubblici**: Integrazione nativa con Adoptium (Eclipse Temurin), Azul Zulu e BellSoft Liberica
--   **Repository Privati**: Supporto completo per distribuzioni JDK aziendali personalizzate
--   **Configurazione Flessibile**: Gestione tramite file di configurazione locale o variabili d'ambiente
-
-### Operazioni Core
-
--   **Esplorazione Remota**: Ricerca e visualizzazione delle versioni JDK disponibili con filtri avanzati
--   **Download Intelligente**: Scaricamento automatico con rilevamento dell'architettura di sistema
--   **Estrazione Automatica**: Opzione di estrazione immediata al completamento del download
--   **Gestione Locale**: Visualizzazione e amministrazione delle versioni JDK installate
--   **Switching Automatico**: Cambio di versione JDK attiva con elevazione automatica dei privilegi
-
-### Caratteristiche Avanzate
-
--   **Autocompletamento**: Supporto nativo per Bash, PowerShell e Command Prompt
--   **Filtri Intelligenti**: Selezione automatica basata su criteri LTS, versioni maggiori e patch più recenti
--   **Gestione PATH**: Strumenti integrati per la riparazione e manutenzione delle variabili di sistema
--   **Rimozione Sicura**: Eliminazione controllata con conferme di sicurezza per operazioni distruttive
+<div style="display: flex; align-items: center">
+<img src="assets/icons/jenvy_white.svg" alt="logo" height="400" />
+<strong>A professional solution for centralized OpenJDK distributions management
+</strong>
+</div>
 
 ---
 
-## Installazione
+Jenvy is a command-line application designed to simplify the installation, management, and switching between different versions of OpenJDK on Windows systems. The tool supports major public providers (Adoptium, Azul Zulu, BellSoft Liberica) and private enterprise repositories.
 
-### Distribuzione Windows
+> **⚠️ Important:** This is a personal and independent open source project. I am not affiliated with Oracle Corporation or its products. Jenvy is a management tool for third-party OpenJDK distributions and does not include, distribute, or modify any Oracle software.
 
-1. Scaricare il file `jenvy-installer.exe` dalla sezione releases
-2. Eseguire l'installer con privilegi di amministratore
-3. Il comando `jenvy` sarà disponibile globalmente in tutti i terminali
+---
 
-### Compilazione da Sorgenti
+## Main Features
+
+### Multi-Provider Management
+
+-   **Public Providers**: Native integration with Adoptium (Eclipse Temurin), Azul Zulu, and BellSoft Liberica
+-   **Private Repositories**: Complete support for custom enterprise JDK distributions
+-   **Flexible Configuration**: Management through local configuration files or environment variables
+
+### Core Operations
+
+-   **Remote Exploration**: Search and display available JDK versions with advanced filters
+-   **Intelligent Download**: Automatic download with system architecture detection
+-   **Automatic Extraction**: Option for immediate extraction upon download completion
+-   **Local Management**: Display and administration of installed JDK versions
+-   **Automatic Switching**: Active JDK version switching with automatic privilege elevation
+
+### Advanced Features
+
+-   **Auto-completion**: Native support for Bash, PowerShell, and Command Prompt
+-   **Smart Filters**: Automatic selection based on LTS criteria, major versions, and latest patches
+-   **PATH Management**: Integrated tools for system variables repair and maintenance
+-   **Safe Removal**: Controlled deletion with security confirmations for destructive operations
+
+---
+
+## Installation
+
+### Windows Distribution
+
+1. Download the `jenvy-installer.exe` file from the releases section
+2. Run the installer with administrator privileges
+3. The `jenvy` command will be available globally in all terminals
+
+### Compilation from Source
 
 ```bash
-# Clonare il repository
+# Clone the repository
 git clone https://github.com/MarcoAntonioRussoDEV/Jenvy.git
 cd Jenvy
 
-# Build completo con installer (richiede Inno Setup)
+# Complete build with installer (requires Inno Setup)
 ./build.bat
 ```
 
 ---
 
-## Guida all'Utilizzo
+## Usage Guide
 
-### Esplorazione delle Versioni Disponibili
+### Exploring Available Versions
 
 ```bash
-# Visualizzazione versioni dal provider predefinito (Adoptium)
+# Display versions from default provider (Adoptium)
 jenvy remote-list
 
-# Esplorazione di provider specifici
+# Explore specific providers
 jenvy remote-list --provider=azul
 jenvy remote-list --provider=liberica
 jenvy remote-list --provider=private
 
-# Filtri avanzati
-jenvy remote-list --lts-only          # Solo versioni Long Term Support
-jenvy remote-list --major-only        # Solo versioni maggiori
-jenvy remote-list --latest            # Solo le versioni più recenti
-jenvy remote-list --all               # Tutte le versioni da tutti i provider
+# Advanced filters
+jenvy remote-list --lts-only          # Only Long Term Support versions
+jenvy remote-list --major-only        # Only major versions
+jenvy remote-list --latest            # Only the latest versions
+jenvy remote-list --all               # All versions from all providers
 ```
 
-### Download e Installazione
+### Download and Installation
 
 ```bash
-# Download di una versione specifica
+# Download a specific version
 jenvy download 21
 
-# Il sistema richiederà automaticamente se estrarre l'archivio:
+# The system will automatically ask if you want to extract the archive:
 # [?] Do you want to extract the archive now? (Y/n):
-# - Y/y/Enter: Estrazione automatica immediata
-# - n/N: Solo download, estrazione manuale successiva
+# - Y/y/Enter: Immediate automatic extraction
+# - n/N: Download only, manual extraction later
 
-# Estrazione manuale di archivi già scaricati
+# Manual extraction of already downloaded archives
 jenvy extract JDK-21.0.1+12
 ```
 
-### Gestione delle Versioni Installate
+### Managing Installed Versions
 
 ```bash
-# Visualizzazione versioni installate
+# Display installed versions
 jenvy list
 
-# Attivazione di una versione specifica (richiede privilegi admin)
+# Activate a specific version (requires admin privileges)
 jenvy use 21
 
 
-### Amministrazione Repository Privati
+### Private Repository Administration
 ```
 
-### Repository privati
+### Private Repositories
 
 ```bash
-# Configurazione repository privato
+# Configure private repository
 jenvy configure-private https://repository.company.com/jdk YOUR_TOKEN
 
-# Visualizzazione configurazione corrente
+# Display current configuration
 jenvy config-show
 
-# Reset configurazione
+# Reset configuration
 jenvy config-reset
 ```
 
-### Rimozione e Manutenzione
+### Removal and Maintenance
 
 ```bash
-# Rimozione versione specifica
+# Remove specific version
 jenvy remove 17
 
-# Rimozione completa (con conferma di sicurezza)
+# Complete removal (with security confirmation)
 jenvy remove --all
 
-# Riparazione variabili di sistema
+# Repair system variables
 jenvy fix-path
 ```
 
 ---
 
-## Configurazione Avanzata
+## Advanced Configuration
 
-### Repository Privati
+### Private Repositories
 
-Il sistema supporta due modalità di configurazione per repository privati:
+The system supports two configuration modes for private repositories:
 
-#### File di Configurazione
+#### Configuration File
 
-Percorso: `%USERPROFILE%\.jenvy\config.json`
+Path: `%USERPROFILE%\.jenvy\config.json`
 
 ```json
 {
@@ -149,24 +157,24 @@ Percorso: `%USERPROFILE%\.jenvy\config.json`
 }
 ```
 
-#### Variabili d'Ambiente
+#### Environment Variables
 
 ```bash
 set JENVY_PRIVATE_ENDPOINT=https://repository.company.com/api/jdk
 set JENVY_PRIVATE_TOKEN=your-auth-token
 ```
 
-### Struttura API Repository Privati
+### Private Repository API Structure
 
-Il sistema richiede che i repository privati espongano un endpoint REST che restituisca un array JSON con le versioni JDK disponibili. L'endpoint può supportare autenticazione tramite header `Authorization: Bearer <token>`.
+The system requires private repositories to expose a REST endpoint that returns a JSON array with available JDK versions. The endpoint can support authentication via `Authorization: Bearer <token>` header.
 
-#### Specifica dell'Endpoint
+#### Endpoint Specification
 
-**URL:** `GET {endpoint}/api/jdk` o endpoint configurato  
+**URL:** `GET {endpoint}/api/jdk` or configured endpoint  
 **Headers:** `Authorization: Bearer {token}`  
 **Content-Type:** `application/json`
 
-#### Formato Risposta JSON
+#### JSON Response Format
 
 ```json
 [
@@ -201,19 +209,19 @@ Il sistema richiede che i repository privati espongano un endpoint REST che rest
 ]
 ```
 
-#### Campi Obbligatori
+#### Required Fields
 
-| Campo      | Tipo    | Descrizione                                   | Valori Accettati                                         |
+| Field      | Type    | Description                                   | Accepted Values                                          |
 | ---------- | ------- | --------------------------------------------- | -------------------------------------------------------- |
-| `version`  | String  | Versione semantica del JDK                    | Formato: `major.minor.patch` o `major.minor.patch+build` |
-| `download` | String  | URL diretto per il download dell'archivio JDK | URL HTTPS valido                                         |
-| `arch`     | String  | Architettura CPU                              | `x64`, `x32`, `aarch64`                                  |
-| `lts`      | Boolean | Indica se è una versione Long Term Support    | `true`, `false`                                          |
+| `version`  | String  | JDK semantic version                          | Format: `major.minor.patch` or `major.minor.patch+build` |
+| `download` | String  | Direct URL for JDK archive download           | Valid HTTPS URL                                          |
+| `arch`     | String  | CPU Architecture                              | `x64`, `x32`, `aarch64`                                  |
+| `lts`      | Boolean | Indicates if it's a Long Term Support version | `true`, `false`                                          |
 
-#### Esempio di Implementazione Server
+#### Server Implementation Example
 
 ```javascript
-// Esempio endpoint Node.js/Express
+// Node.js/Express endpoint example
 app.get("/api/jdk", authenticateToken, (req, res) => {
     const jdkVersions = [
         {
@@ -223,7 +231,7 @@ app.get("/api/jdk", authenticateToken, (req, res) => {
             arch: "x64",
             lts: true,
         },
-        // ... altre versioni
+        // ... other versions
     ];
 
     res.json(jdkVersions);
@@ -241,58 +249,58 @@ function authenticateToken(req, res, next) {
 }
 ```
 
-## Gestione Privilegi Windows
+## Windows Privilege Management
 
-### Elevazione Automatica UAC
+### Automatic UAC Elevation
 
-Il comando `jenvy use` richiede automaticamente l'elevazione dei privilegi attraverso il dialogo UAC di Windows per:
+The `jenvy use` command automatically requests privilege elevation through Windows UAC dialog to:
 
--   Modificare la variabile di sistema `JAVA_HOME`
--   Aggiornare la variabile di sistema `PATH`
--   Garantire la persistenza delle modifiche per tutti gli utenti
+-   Modify the `JAVA_HOME` system variable
+-   Update the `PATH` system variable
+-   Ensure persistence of changes for all users
 
-**Flusso operativo:**
+**Operational flow:**
 
-1. Esecuzione comando `jenvy use <version>`
-2. Richiesta automatica elevazione privilegi
-3. Conferma utente tramite dialogo UAC
-4. Applicazione modifiche con privilegi amministrativi
-
----
-
-## 💖 Supporta il Progetto
-
-Jenvy è un progetto open source sviluppato nel tempo libero. Se trovi utile questo tool e vuoi supportare il suo sviluppo, considera una donazione:
-
-### 🎯 Opzioni di Donazione
-
--   **GitHub Sponsors**: [Sponsorizza su GitHub](https://github.com/sponsors/MarcoAntonioRussoDEV)
--   **Ko-fi**: [Supporta su Ko-fi](https://ko-fi.com/marcoantoniorussodev)
--   **PayPal**: [Dona via PayPal](https://paypal.me/Ocrama94)
-
-### 🚀 Come vengono utilizzate le donazioni
-
-Le donazioni aiutano a:
-
--   Mantenere il progetto attivo e aggiornato
--   Aggiungere nuove funzionalità richieste dalla community
--   Migliorare la documentazione e i test
-
-### 🤝 Altri modi per contribuire
-
-Anche se non puoi donare, puoi supportare il progetto:
-
--   ⭐ Metti una stella al repository su GitHub
--   🐛 Segnala bug e problemi
--   💡 Suggerisci nuove funzionalità
--   📖 Migliora la documentazione
--   🔧 Contribuisci con pull request
+1. Execute command `jenvy use <version>`
+2. Automatic privilege elevation request
+3. User confirmation via UAC dialog
+4. Apply changes with administrative privileges
 
 ---
 
-## 📄 Licenza
+## 💖 Support the Project
 
-Questo progetto è rilasciato sotto licenza **MIT License**.
+Jenvy is an open source project developed in my spare time. If you find this tool useful and want to support its development, consider a donation:
+
+### 🎯 Donation Options
+
+-   **GitHub Sponsors**: [Sponsor on GitHub](https://github.com/sponsors/MarcoAntonioRussoDEV)
+-   **Ko-fi**: [Support on Ko-fi](https://ko-fi.com/marcoantoniorussodev)
+-   **PayPal**: [Donate via PayPal](https://paypal.me/Ocrama94)
+
+### 🚀 How donations are used
+
+Donations help to:
+
+-   Keep the project active and updated
+-   Add new features requested by the community
+-   Improve documentation and tests
+
+### 🤝 Other ways to contribute
+
+Even if you can't donate, you can support the project:
+
+-   ⭐ Star the repository on GitHub
+-   🐛 Report bugs and issues
+-   💡 Suggest new features
+-   📖 Improve documentation
+-   🔧 Contribute with pull requests
+
+---
+
+## 📄 License
+
+This project is released under **MIT License**.
 
 ```
 MIT License
@@ -318,53 +326,55 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### 🔒 Disclaimer e Responsabilità
+### 🔒 Disclaimer and Liability
 
--   **Nessuna affiliazione**: Questo progetto non è affiliato, approvato o sponsorizzato da Oracle Corporation
--   **Software di terze parti**: Jenvy gestisce distribuzioni OpenJDK fornite da provider terzi (Eclipse Adoptium, Azul, BellSoft)
--   **Utilizzo a proprio rischio**: Il software è fornito "as-is" senza garanzie di alcun tipo
--   **Responsabilità utente**: L'utente è responsabile del rispetto delle licenze dei JDK scaricati
--   **Marchi registrati**: Java e OpenJDK sono marchi registrati di Oracle Corporation
-
----
-
-## 🤝 Contribuire
-
-Contributi, segnalazioni di bug e richieste di funzionalità sono benvenuti!
-
-### 📋 Come contribuire
-
-1. Fai fork del repository
-2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
-3. Committa le tue modifiche (`git commit -m 'Add some AmazingFeature'`)
-4. Pusha il branch (`git push origin feature/AmazingFeature`)
-5. Apri una Pull Request
-
-### 🐛 Segnalare Bug
-
-Apri una [issue su GitHub](https://github.com/MarcoAntonioRussoDEV/Jenvy/issues) includendo:
-
--   Versione di Windows utilizzata
--   Versione di Jenvy (`jenvy --version`)
--   Descrizione dettagliata del problema
--   Log di errore (se disponibile)
--   Passi per riprodurre il bug
-
-### 💡 Richiedere Funzionalità
-
-Per nuove funzionalità, apri una [discussion su GitHub](https://github.com/MarcoAntonioRussoDEV/Jenvy/discussions) specificando:
-
--   Caso d'uso specifico
--   Comportamento desiderato
--   Eventuali alternative considerate
+-   **No affiliation**: This project is not affiliated, approved, or sponsored by Oracle Corporation
+-   **Third-party software**: Jenvy manages OpenJDK distributions provided by third-party providers (Eclipse Adoptium, Azul, BellSoft)
+-   **Use at your own risk**: The software is provided "as-is" without warranties of any kind
+-   **User responsibility**: The user is responsible for compliance with downloaded JDK licenses
+-   **Trademarks**: Java and OpenJDK are registered trademarks of Oracle Corporation
 
 ---
 
-## 📞 Contatti
+## 🤝 Contributing
+
+Contributions, bug reports, and feature requests are welcome!
+
+### 📋 How to contribute
+
+1. Fork the repository
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### 🐛 Report Bugs
+
+Open an [issue on GitHub](https://github.com/MarcoAntonioRussoDEV/Jenvy/issues) including:
+
+-   Windows version used
+-   Jenvy version (`jenvy --version`)
+-   Detailed problem description
+-   Error log (if available)
+-   Steps to reproduce the bug
+
+### 💡 Request Features
+
+For new features, open a [discussion on GitHub](https://github.com/MarcoAntonioRussoDEV/Jenvy/discussions) specifying:
+
+-   Specific use case
+-   Desired behavior
+-   Any alternatives considered
+
+---
+
+## 📞 Contacts
 
 -   **GitHub**: [@MarcoAntonioRussoDEV](https://github.com/MarcoAntonioRussoDEV)
 -   **Email**: marcoantoniorusso94@gmail.com
 
 ---
 
-**Sviluppato da Marco Antonio Russo**
+![signature](assets/images/SVG_GRADIENT_WHITE.svg)
+
+---
