@@ -4,6 +4,8 @@
 
 Jenvy è un'applicazione a riga di comando progettata per semplificare l'installazione, la gestione e il passaggio tra diverse versioni di OpenJDK su sistemi Windows. Il tool supporta i principali provider pubblici (Adoptium, Azul Zulu, BellSoft Liberica) e repository privati aziendali.
 
+> **⚠️ Importante:** Questo è un progetto open source personale e indipendente. Non sono affiliato con Oracle Corporation o con i suoi prodotti. Jenvy è un tool di gestione per distribuzioni OpenJDK di terze parti e non include, distribuisce o modifica alcun software Oracle.
+
 ---
 
 ## Funzionalità Principali
@@ -27,7 +29,7 @@ Jenvy è un'applicazione a riga di comando progettata per semplificare l'install
 -   **Autocompletamento**: Supporto nativo per Bash, PowerShell e Command Prompt
 -   **Filtri Intelligenti**: Selezione automatica basata su criteri LTS, versioni maggiori e patch più recenti
 -   **Gestione PATH**: Strumenti integrati per la riparazione e manutenzione delle variabili di sistema
--   **Rimozione Sicura**: Eliminazione controllea con conferme di sicurezza per operazioni distruttive
+-   **Rimozione Sicura**: Eliminazione controllata con conferme di sicurezza per operazioni distruttive
 
 ---
 
@@ -45,9 +47,6 @@ Jenvy è un'applicazione a riga di comando progettata per semplificare l'install
 # Clonare il repository
 git clone https://github.com/MarcoAntonioRussoDEV/Jenvy.git
 cd Jenvy
-
-# Compilazione per Windows
-GOOS=windows GOARCH=amd64 go build -o jenvy.exe main.go
 
 # Build completo con installer (richiede Inno Setup)
 ./build.bat
@@ -99,14 +98,14 @@ jenvy list
 # Attivazione di una versione specifica (richiede privilegi admin)
 jenvy use 21
 
-# Configurazione della versione predefinita
-jenvy init
-```
 
 ### Amministrazione Repository Privati
+```
+
+### Repository privati
 
 ```bash
-# Configurazione repository aziendale
+# Configurazione repository privato
 jenvy configure-private https://repository.company.com/jdk YOUR_TOKEN
 
 # Visualizzazione configurazione corrente
@@ -159,7 +158,7 @@ set JENVY_PRIVATE_TOKEN=your-auth-token
 
 ### Struttura API Repository Privati
 
-Il sistema richiede che i repository privati espongano un endpoint REST che restituisca un array JSON con le versioni JDK disponibili. L'endpoint deve supportare autenticazione tramite header `Authorization: Bearer <token>`.
+Il sistema richiede che i repository privati espongano un endpoint REST che restituisca un array JSON con le versioni JDK disponibili. L'endpoint può supportare autenticazione tramite header `Authorization: Bearer <token>`.
 
 #### Specifica dell'Endpoint
 
@@ -208,7 +207,6 @@ Il sistema richiede che i repository privati espongano un endpoint REST che rest
 | ---------- | ------- | --------------------------------------------- | -------------------------------------------------------- |
 | `version`  | String  | Versione semantica del JDK                    | Formato: `major.minor.patch` o `major.minor.patch+build` |
 | `download` | String  | URL diretto per il download dell'archivio JDK | URL HTTPS valido                                         |
-| `os`       | String  | Sistema operativo target                      | `windows`, `linux`, `macos`                              |
 | `arch`     | String  | Architettura CPU                              | `x64`, `x32`, `aarch64`                                  |
 | `lts`      | Boolean | Indica se è una versione Long Term Support    | `true`, `false`                                          |
 
@@ -222,7 +220,6 @@ app.get("/api/jdk", authenticateToken, (req, res) => {
             version: "11.0.21",
             download:
                 "https://repository.company.com/private-jdk/openjdk-11.0.21.zip",
-            os: "windows",
             arch: "x64",
             lts: true,
         },
@@ -244,21 +241,6 @@ function authenticateToken(req, res, next) {
 }
 ```
 
-### Autocompletamento
-
-```bash
-# Bash
-jenvy completion bash >> ~/.bashrc
-
-# PowerShell
-jenvy completion powershell >> $PROFILE
-
-# Command Prompt
-jenvy completion cmd
-```
-
----
-
 ## Gestione Privilegi Windows
 
 ### Elevazione Automatica UAC
@@ -275,3 +257,114 @@ Il comando `jenvy use` richiede automaticamente l'elevazione dei privilegi attra
 2. Richiesta automatica elevazione privilegi
 3. Conferma utente tramite dialogo UAC
 4. Applicazione modifiche con privilegi amministrativi
+
+---
+
+## 💖 Supporta il Progetto
+
+Jenvy è un progetto open source sviluppato nel tempo libero. Se trovi utile questo tool e vuoi supportare il suo sviluppo, considera una donazione:
+
+### 🎯 Opzioni di Donazione
+
+-   **GitHub Sponsors**: [Sponsorizza su GitHub](https://github.com/sponsors/MarcoAntonioRussoDEV)
+-   **Ko-fi**: [Supporta su Ko-fi](https://ko-fi.com/marcoantoniorussodev)
+-   **PayPal**: [Dona via PayPal](https://paypal.me/Ocrama94)
+
+### 🚀 Come vengono utilizzate le donazioni
+
+Le donazioni aiutano a:
+
+-   Mantenere il progetto attivo e aggiornato
+-   Aggiungere nuove funzionalità richieste dalla community
+-   Migliorare la documentazione e i test
+
+### 🤝 Altri modi per contribuire
+
+Anche se non puoi donare, puoi supportare il progetto:
+
+-   ⭐ Metti una stella al repository su GitHub
+-   🐛 Segnala bug e problemi
+-   💡 Suggerisci nuove funzionalità
+-   📖 Migliora la documentazione
+-   🔧 Contribuisci con pull request
+
+---
+
+## 📄 Licenza
+
+Questo progetto è rilasciato sotto licenza **MIT License**.
+
+```
+MIT License
+
+Copyright (c) 2025 Marco Antonio Russo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### 🔒 Disclaimer e Responsabilità
+
+-   **Nessuna affiliazione**: Questo progetto non è affiliato, approvato o sponsorizzato da Oracle Corporation
+-   **Software di terze parti**: Jenvy gestisce distribuzioni OpenJDK fornite da provider terzi (Eclipse Adoptium, Azul, BellSoft)
+-   **Utilizzo a proprio rischio**: Il software è fornito "as-is" senza garanzie di alcun tipo
+-   **Responsabilità utente**: L'utente è responsabile del rispetto delle licenze dei JDK scaricati
+-   **Marchi registrati**: Java e OpenJDK sono marchi registrati di Oracle Corporation
+
+---
+
+## 🤝 Contribuire
+
+Contributi, segnalazioni di bug e richieste di funzionalità sono benvenuti!
+
+### 📋 Come contribuire
+
+1. Fai fork del repository
+2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
+3. Committa le tue modifiche (`git commit -m 'Add some AmazingFeature'`)
+4. Pusha il branch (`git push origin feature/AmazingFeature`)
+5. Apri una Pull Request
+
+### 🐛 Segnalare Bug
+
+Apri una [issue su GitHub](https://github.com/MarcoAntonioRussoDEV/Jenvy/issues) includendo:
+
+-   Versione di Windows utilizzata
+-   Versione di Jenvy (`jenvy --version`)
+-   Descrizione dettagliata del problema
+-   Log di errore (se disponibile)
+-   Passi per riprodurre il bug
+
+### 💡 Richiedere Funzionalità
+
+Per nuove funzionalità, apri una [discussion su GitHub](https://github.com/MarcoAntonioRussoDEV/Jenvy/discussions) specificando:
+
+-   Caso d'uso specifico
+-   Comportamento desiderato
+-   Eventuali alternative considerate
+
+---
+
+## 📞 Contatti
+
+-   **GitHub**: [@MarcoAntonioRussoDEV](https://github.com/MarcoAntonioRussoDEV)
+-   **Email**: marcoantoniorusso94@gmail.com
+
+---
+
+**Sviluppato da Marco Antonio Russo**

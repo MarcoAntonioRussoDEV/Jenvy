@@ -17,7 +17,7 @@ import (
 // Questa funzione implementa un sistema completo di rilevamento e analisi delle installazioni JDK
 // nella directory di gestione locale (~/.jenvy/versions) con le seguenti funzionalità:
 //
-//  1. **Scansione directory JVM**: Accede alla directory ~/.jenvy/versions nel profilo utente Windows
+//  1. **Scansione directory Jenvy**: Accede alla directory ~/.jenvy/versions nel profilo utente Windows
 //     per individuare tutte le installazioni JDK gestite dal tool
 //
 //  2. **Analisi automatica**: Per ogni installazione rilevata esegue:
@@ -46,7 +46,7 @@ import (
 //
 // Esempi di utilizzo:
 //
-//	jvm list  # Mostra tutte le installazioni JDK locali
+//	jenvy list  # Mostra tutte le installazioni JDK locali
 func ListInstalledJDKs() {
 	fmt.Println(utils.ColorText("LOCAL JDK INSTALLATIONS", utils.Bold+utils.BrightCyan))
 	fmt.Println()
@@ -472,9 +472,9 @@ func displayJDKTable(jdks []JDKInstallation) {
 	fmt.Printf("   %s - Empty or corrupted directory\n", utils.ColorText("[EMPTY]", utils.BrightRed))
 	fmt.Println()
 	fmt.Println(utils.ColorText("[INFO] Available next commands:", utils.Bold))
-	fmt.Println("   jvm extract <version>  - Extract a JDK archive")
-	fmt.Println("   jvm use <version>      - Set as active JDK")
-	fmt.Println("   jvm remove <version>   - Remove a version")
+	fmt.Println("   jenvy extract <version>  - Extract a JDK archive")
+	fmt.Println("   jenvy use <version>      - Set as active JDK")
+	fmt.Println("   jenvy remove <version>   - Remove a version")
 }
 
 // getStatusIcon restituisce l'icona di stato appropriata senza emoji

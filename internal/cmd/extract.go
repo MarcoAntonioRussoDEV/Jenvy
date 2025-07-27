@@ -54,16 +54,16 @@ import (
 //
 // **Sintassi comando:**
 //
-//	jvm extract                      # mostra archivi disponibili da estrarre
-//	jvm extract 17                   # estrae versione 17.x.y più recente
-//	jvm extract 17.0                 # estrae versione 17.0.x più recente
-//	jvm extract JDK-17.0.16+8        # estrae versione specifica esatta
+//	jenvy extract                      # mostra archivi disponibili da estrarre
+//	jenvy extract 17                   # estrae versione 17.x.y più recente
+//	jenvy extract 17.0                 # estrae versione 17.0.x più recente
+//	jenvy extract JDK-17.0.16+8        # estrae versione specifica esatta
 //
 // **Esempi d'uso:**
 //
-//	jvm extract                      # mostra: JDK-17.0.16+8, JDK-21.0.1+12, etc.
-//	jvm extract 17                   # trova e estrae JDK-17.0.16+8 automaticamente
-//	jvm extract JDK-21.0.1+12        # estrae specificamente questa versione
+//	jenvy extract                      # mostra: JDK-17.0.16+8, JDK-21.0.1+12, etc.
+//	jenvy extract 17                   # trova e estrae JDK-17.0.16+8 automaticamente
+//	jenvy extract JDK-21.0.1+12        # estrae specificamente questa versione
 //
 // La funzione garantisce estrazione sicura e pulizia automatica in caso di errori.
 func ExtractJDK() {
@@ -208,8 +208,8 @@ func showAvailableArchives(versionsDir string) {
 	if len(availableArchives) == 0 && len(extractedJDKs) == 0 {
 		utils.PrintInfo("No JDK versions found in ~/.jenvy/versions")
 		utils.PrintInfo("Download JDKs first using:")
-		utils.PrintInfo("  jvm remote-list          # See available versions")
-		utils.PrintInfo("  jvm download <version>   # Download a JDK")
+		utils.PrintInfo("  jenvy remote-list          # See available versions")
+		utils.PrintInfo("  jenvy download <version>   # Download a JDK")
 		return
 	}
 
@@ -220,13 +220,13 @@ func showAvailableArchives(versionsDir string) {
 		}
 		fmt.Println()
 		utils.PrintInfo("To extract a JDK, use:")
-		utils.PrintInfo("  jvm extract <jdk-version>")
+		utils.PrintInfo("  jenvy extract <jdk-version>")
 		utils.PrintInfo("Example:")
 		if len(availableArchives) > 0 {
 			// Estrai il nome JDK dal primo elemento disponibile
 			firstJDK := strings.Split(availableArchives[0], " ")[0]
 			firstJDK = strings.TrimSpace(firstJDK)
-			utils.PrintInfo(fmt.Sprintf("  jvm extract %s", firstJDK))
+			utils.PrintInfo(fmt.Sprintf("  jenvy extract %s", firstJDK))
 		}
 	}
 
@@ -418,7 +418,7 @@ func findArchiveInDirectory(dirPath string) (string, error) {
 //
 // **Gestione strutture archivio:**
 // - Rimozione directory wrapper se presente (comune in archivi JDK)
-// - Normalizzazione struttura per compatibilità con altri comandi jvm
+// - Normalizzazione struttura per compatibilità con altri comandi jenvy
 // - Preservazione metadata JDK essenziali
 //
 // Parametri:

@@ -41,7 +41,7 @@ func GetPrivateJDKs() ([]PrivateRelease, error) {
 	token := cfg.PrivateToken
 
 	if endpoint == "" {
-		return nil, errors.New("⚠️ JVM_PRIVATE_ENDPOINT environment variable not set")
+		return nil, errors.New("⚠️ Jenvy_PRIVATE_ENDPOINT environment variable not set")
 	}
 
 	req, _ := http.NewRequest("GET", endpoint, nil)

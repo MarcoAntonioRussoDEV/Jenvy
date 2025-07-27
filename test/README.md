@@ -1,6 +1,6 @@
-# Test Suite - Java Version Manager
+# Test Suite - Jenvy
 
-Questa directory contiene la suite di test completa per Java Version Manager, progettata per garantire la qualità, l'affidabilità e le performance del software.
+Questa directory contiene la suite di test completa per Jenvy, progettata per garantire la qualità, l'affidabilità e le performance del software.
 
 ## 📁 Struttura Test
 
@@ -101,7 +101,7 @@ Il report viene generato in `coverage/coverage.html` e include:
 
 -   [x] `ParseVersionNumber()` - Parsing versioni Java
 -   [x] `IsValidJDKDirectory()` - Validazione struttura JDK
--   [x] `GetJVMVersionsDirectory()` - Path directory versioni
+-   [x] `GetJenvyVersionsDirectory()` - Path directory versioni
 -   [x] `FindSingleJDKInstallation()` - Ricerca installazioni
 
 ### Validazione JDK

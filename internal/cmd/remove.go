@@ -15,8 +15,8 @@ import (
 // con particolare attenzione alla sicurezza e integrità del sistema Windows:
 //
 // **Modalità di rimozione supportate:**
-// - Rimozione singola versione: `jvm remove <version>` o `jvm rm <version>`
-// - Rimozione completa: `jvm remove --all` o `jvm rm -a`
+// - Rimozione singola versione: `jenvy remove <version>` o `jenvy rm <version>`
+// - Rimozione completa: `jenvy remove --all` o `jenvy rm -a`
 //
 // **Sicurezza e validazioni Windows:**
 // - Verifica se il JDK è attualmente impostato come JAVA_HOME
@@ -41,9 +41,9 @@ import (
 func RemoveJDK() {
 	if len(os.Args) < 3 {
 		utils.PrintUsage("Usage: jenvy remove <version>")
-		utils.PrintUsage("       jvm remove --all")
+		utils.PrintUsage("       jenvy remove --all")
 		utils.PrintUsage("Short form: jenvy rm <version>")
-		utils.PrintUsage("           jvm rm -a")
+		utils.PrintUsage("           jenvy rm -a")
 		utils.PrintInfo("Available JDKs:")
 		showAvailableJDKsForRemoval()
 		return
@@ -85,7 +85,7 @@ func RemoveJDK() {
 	if isJDKCurrentlyInUse(jdkPath) {
 		utils.PrintWarning(fmt.Sprintf("JDK %s is currently set as JAVA_HOME", version))
 		utils.PrintInfo("Consider switching to another version before removal:")
-		utils.PrintInfo("  jvm use <other-version>")
+		utils.PrintInfo("  jenvy use <other-version>")
 		utils.PrintInfo("Continuing will unset JAVA_HOME and may affect running Java applications")
 		fmt.Print("\nDo you want to continue anyway? [y/N]: ")
 
@@ -335,7 +335,7 @@ func isJDKCurrentlyInUse(jdkPath string) bool {
 // **Presentazione informazioni:**
 // - Lista ordinata delle versioni disponibili
 // - Estrazione versione pulita da nomi directory complessi
-// - Formato output consistent con altri comandi jvm
+// - Formato output consistent con altri comandi jenvy
 // - Gestione graceful di directory vuote o corrotte
 //
 // **Gestione errori Windows:**

@@ -43,7 +43,7 @@ import (
 // **Presentazione informazioni:**
 // - Output strutturato e leggibile delle configurazioni
 // - Gestione valori vuoti con indicatori appropriati
-// - Formattazione consistent con altri comandi jvm
+// - Formattazione consistent con altri comandi jenvy
 // - Supporto per redirection output per scripting Windows
 //
 // **Gestione errori robusta:**
@@ -70,11 +70,11 @@ func ShowCurrentConfig() {
 	}
 
 	configPath := filepath.Join(homeDir, ".jenvy", "config.json")
-	jvmDir := filepath.Join(homeDir, ".jenvy")
+	jenvyDir := filepath.Join(homeDir, ".jenvy")
 
 	// Verifica esistenza directory .jenvy
-	if _, err := os.Stat(jvmDir); os.IsNotExist(err) {
-		utils.PrintInfo("JVM configuration directory not found")
+	if _, err := os.Stat(jenvyDir); os.IsNotExist(err) {
+		utils.PrintInfo("Jenvy configuration directory not found")
 		utils.PrintInfo("No private repository has been configured yet")
 		utils.PrintInfo("Use 'jenvy configure private <URL>' to set up a repository")
 		return

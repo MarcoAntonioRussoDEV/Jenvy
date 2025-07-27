@@ -62,7 +62,7 @@ func main() {
 		cmd.FixPath()
 
 	case "init":
-		cmd.InitializeJVMEnvironment()
+		cmd.InitializeJenvyEnvironment()
 
 	case "configure-private", "cp":
 		if len(os.Args) < 3 {

@@ -39,10 +39,10 @@ import (
 //
 // Esempi di utilizzo:
 //
-//	jvm fix-path  # Pulisce automaticamente il PATH di sistema
+//	jenvy fix-path  # Pulisce automaticamente il PATH di sistema
 func FixPath() {
 
-	fmt.Println("JVM PATH REPAIR UTILITY")
+	fmt.Println("Jenvy PATH REPAIR UTILITY")
 	fmt.Println("==========================")
 	fmt.Println()
 

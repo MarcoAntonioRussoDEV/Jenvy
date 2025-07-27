@@ -75,7 +75,7 @@ func ConfigurePrivateRepo(endpoint string, token string) {
 		return
 	}
 
-	// Costruisce il percorso della directory di configurazione JVM
+	// Costruisce il percorso della directory di configurazione Jenvy
 	// Su Windows: C:\Users\username\.jenvy
 	dir := filepath.Join(home, ".jenvy")
 

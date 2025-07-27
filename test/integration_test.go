@@ -19,35 +19,35 @@ func TestIntegrationWorkflow(t *testing.T) {
 	setupTestEnvironment(t, tempDir)
 
 	t.Run("Complete_Workflow", func(t *testing.T) {
-		// 1. Simulazione: jvm init
-		t.Log("Step 1: Initialize JVM environment")
-		initResult := simulateJVMInit(t, tempDir)
+		// 1. Simulazione: jenvy init
+		t.Log("Step 1: Initialize Jenvy environment")
+		initResult := simulateJenvyInit(t, tempDir)
 		if !initResult.Success {
-			t.Fatalf("JVM init failed: %s", initResult.Error)
+			t.Fatalf("Jenvy init failed: %s", initResult.Error)
 		}
 
-		// 2. Simulazione: jvm remote-list
+		// 2. Simulazione: jenvy remote-list
 		t.Log("Step 2: List remote JDK versions")
 		remoteListResult := simulateRemoteList(t)
 		if len(remoteListResult.Versions) == 0 {
 			t.Error("Remote list should return at least one version")
 		}
 
-		// 3. Simulazione: jvm download (mock)
+		// 3. Simulazione: jenvy download (mock)
 		t.Log("Step 3: Download JDK version")
 		downloadResult := simulateDownload(t, tempDir, "17.0.5")
 		if !downloadResult.Success {
 			t.Fatalf("Download failed: %s", downloadResult.Error)
 		}
 
-		// 4. Simulazione: jvm list
+		// 4. Simulazione: jenvy list
 		t.Log("Step 4: List installed JDKs")
 		listResult := simulateList(t, tempDir)
 		if len(listResult.Installed) == 0 {
 			t.Error("List should show at least one installed JDK")
 		}
 
-		// 5. Simulazione: jvm use (mock - without UAC)
+		// 5. Simulazione: jenvy use (mock - without UAC)
 		t.Log("Step 5: Use JDK version")
 		useResult := simulateUse(t, tempDir, "17.0.5")
 		if !useResult.Success {
@@ -59,15 +59,15 @@ func TestIntegrationWorkflow(t *testing.T) {
 // setupTestEnvironment prepara l'ambiente di test
 func setupTestEnvironment(t *testing.T, baseDir string) {
 	// Crea directory .jenvy/versions
-	jvmDir := filepath.Join(baseDir, ".jenvy")
-	versionsDir := filepath.Join(jvmDir, "versions")
+	jenvyDir := filepath.Join(baseDir, ".jenvy")
+	versionsDir := filepath.Join(jenvyDir, "versions")
 	err := os.MkdirAll(versionsDir, 0755)
 	if err != nil {
 		t.Fatalf("Failed to create test environment: %v", err)
 	}
 
 	// Crea file config di default
-	configPath := filepath.Join(jvmDir, "config.json")
+	configPath := filepath.Join(jenvyDir, "config.json")
 	defaultConfig := `{
 		"provider": "adoptium",
 		"lts_only": false
@@ -103,19 +103,19 @@ type UseResult struct {
 	Error   string
 }
 
-// simulateJVMInit simula l'inizializzazione di JVM
-func simulateJVMInit(t *testing.T, baseDir string) InitResult {
+// simulateJenvyInit simula l'inizializzazione di Jenvy
+func simulateJenvyInit(t *testing.T, baseDir string) InitResult {
 	// Verifica che directory .jenvy esista
-	jvmDir := filepath.Join(baseDir, ".jenvy")
-	if _, err := os.Stat(jvmDir); os.IsNotExist(err) {
+	jenvyDir := filepath.Join(baseDir, ".jenvy")
+	if _, err := os.Stat(jenvyDir); os.IsNotExist(err) {
 		return InitResult{
 			Success: false,
-			Error:   "JVM directory not found",
+			Error:   "Jenvy directory not found",
 		}
 	}
 
 	// Verifica che config.json esista
-	configPath := filepath.Join(jvmDir, "config.json")
+	configPath := filepath.Join(jenvyDir, "config.json")
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		return InitResult{
 			Success: false,

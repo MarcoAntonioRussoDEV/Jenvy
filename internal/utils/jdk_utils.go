@@ -268,9 +268,9 @@ func IsValidJDKDirectory(path string) bool {
 	return true
 }
 
-// GetJVMVersionsDirectory ritorna il percorso della directory standard per le versioni JVM.
+// GetJenvyVersionsDirectory ritorna il percorso della directory standard per le versioni Jenvy.
 //
-// Questa funzione centralizza la logica per determinare dove JVM installa e gestisce
+// Questa funzione centralizza la logica per determinare dove Jenvy installa e gestisce
 // le diverse versioni JDK, fornendo un percorso consistente per tutte le operazioni
 // di gestione versioni.
 //
@@ -297,12 +297,12 @@ func IsValidJDKDirectory(path string) bool {
 //
 // Utilizzo tipico:
 //
-//	versionsDir, err := GetJVMVersionsDirectory()
+//	versionsDir, err := GetJenvyVersionsDirectory()
 //	if err != nil {
-//	    return fmt.Errorf("cannot access JVM directory: %w", err)
+//	    return fmt.Errorf("cannot access Jenvy directory: %w", err)
 //	}
 //	// versionsDir = "C:\Users\Marco\.jenvy\versions"
-func GetJVMVersionsDirectory() (string, error) {
+func GetJenvyVersionsDirectory() (string, error) {
 	homeDir, err := user.Current()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current user: %w", err)
@@ -316,7 +316,7 @@ func GetJVMVersionsDirectory() (string, error) {
 //
 // Questa funzione implementa un algoritmo di ricerca intelligente per trovare
 // tutte le installazioni JDK corrispondenti alla versione richiesta, gestendo sia
-// corrispondenze esatte che parziali nella directory delle versioni JVM.
+// corrispondenze esatte che parziali nella directory delle versioni Jenvy.
 //
 // Algoritmo di ricerca a due fasi:
 // 1. **Exact Match**: Cerca corrispondenza esatta "JDK-{version}"
@@ -358,9 +358,9 @@ func GetJVMVersionsDirectory() (string, error) {
 //	}
 //	// paths = ["C:\Users\user\.jenvy\versions\JDK-17.0.5"]
 func FindJDKInstallationPaths(version string) ([]string, error) {
-	versionsDir, err := GetJVMVersionsDirectory()
+	versionsDir, err := GetJenvyVersionsDirectory()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get JVM directory: %w", err)
+		return nil, fmt.Errorf("failed to get Jenvy directory: %w", err)
 	}
 
 	// Look for exact match first
@@ -422,7 +422,7 @@ func FindJDKInstallationPaths(version string) ([]string, error) {
 //	error  - nil se trovato singolo match, errore specifico per altri casi
 //
 // Tipi di errore:
-//   - **Directory JVM inaccessibile**: Problemi permessi o configurazione
+//   - **Directory Jenvy inaccessibile**: Problemi permessi o configurazione
 //   - **Nessuna corrispondenza**: Versione richiesta non installata
 //   - **Multiple corrispondenze**: Versione ambigua, serve maggiore precisione
 //

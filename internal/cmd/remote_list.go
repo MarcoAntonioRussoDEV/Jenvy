@@ -51,11 +51,11 @@ import (
 //
 // **Esempi di utilizzo:**
 //
-//	jvm remote-list                                    # Versioni raccomandate provider default
-//	jvm remote-list --provider=adoptium               # Solo versioni Adoptium
-//	jvm remote-list --all                             # Tutte le versioni di tutti i provider
-//	jvm remote-list --provider=azul --lts-only        # Solo LTS di Azul
-//	jvm remote-list --jdk=17 --latest                 # Ultima versione JDK 17
+//	jenvy remote-list                                    # Versioni raccomandate provider default
+//	jenvy remote-list --provider=adoptium               # Solo versioni Adoptium
+//	jenvy remote-list --all                             # Tutte le versioni di tutti i provider
+//	jenvy remote-list --provider=azul --lts-only        # Solo LTS di Azul
+//	jenvy remote-list --jdk=17 --latest                 # Ultima versione JDK 17
 //
 // Parametri:
 //   - defaultProvider: Provider predefinito da utilizzare se non specificato

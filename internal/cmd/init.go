@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 )
 
-// Init inizializza completamente l'ambiente Java Version Manager (JVM) su Windows.
+// Init inizializza completamente l'ambiente Jenvy su Windows.
 //
 // Questa funzione esegue le seguenti operazioni di setup:
-// 1. Verifica che l'eseguibile jvm sia presente nel PATH di sistema
+// 1. Verifica che l'eseguibile jenvy sia presente nel PATH di sistema
 // 2. Crea la directory di configurazione ~/.jenvy se non esiste
 // 3. Installa gli script di autocompletamento per Bash, PowerShell e CMD
 // 4. Controlla l'esistenza di un file di configurazione e ne crea uno di default se necessario
@@ -20,7 +20,7 @@ import (
 //
 // Esempi di utilizzo:
 //
-//	jvm init                    # Inizializzazione completa
+//	jenvy init                    # Inizializzazione completa
 //
 // Note:
 //   - Dopo l'esecuzione è necessario riavviare il terminale per abilitare l'autocompletamento
@@ -29,12 +29,12 @@ import (
 //   - Il file di configurazione di default include impostazioni per provider preferito e LTS
 //   - Supporta solo Windows (richiede Registry di sistema e UAC per gestione JAVA_HOME)
 func Init() {
-	fmt.Println("Initializing Java Version Manager...")
+	fmt.Println("Initializing Jenvy...")
 
-	// Verifica se jvm è nel PATH
-	if !isJvmInPath() {
-		fmt.Println("[WARNING] JVM executable not found in PATH")
-		fmt.Println("[INFO] Consider adding the JVM directory to your PATH for global access")
+	// Verifica se jenvy è nel PATH
+	if !isJenvyInPath() {
+		fmt.Println("[WARNING] Jenvy executable not found in PATH")
+		fmt.Println("[INFO] Consider adding the Jenvy directory to your PATH for global access")
 	}
 
 	// Crea directory di configurazione se non esiste
@@ -63,19 +63,19 @@ func Init() {
 
 	fmt.Println("\nJava Version Manager initialization complete!")
 	fmt.Println("[INFO] Available commands:")
-	fmt.Println("   jvm remote-list       - Show available JDK versions")
-	fmt.Println("   jvm list               - Show installed JDK versions")
-	fmt.Println("   jvm download <version> - Download and install a JDK version")
-	fmt.Println("   jvm use <version>     - Set JAVA_HOME system-wide")
-	fmt.Println("   jvm remove <version>  - Remove installed JDK version")
-	fmt.Println("   jvm help              - Show detailed help")
+	fmt.Println("   jenvy remote-list       - Show available JDK versions")
+	fmt.Println("   jenvy list               - Show installed JDK versions")
+	fmt.Println("   jenvy download <version> - Download and install a JDK version")
+	fmt.Println("   jenvy use <version>     - Set JAVA_HOME system-wide")
+	fmt.Println("   jenvy remove <version>  - Remove installed JDK version")
+	fmt.Println("   jenvy help              - Show detailed help")
 	fmt.Println("\n🔧 Restart your terminal to enable tab completion!")
 }
 
-// isJvmInPath verifica se l'eseguibile jvm è accessibile tramite la variabile PATH di Windows.
+// isJenvyInPath verifica se l'eseguibile jenvy è accessibile tramite la variabile PATH di Windows.
 //
 // Questa funzione confronta la directory dell'eseguibile corrente con tutte le directory
-// presenti nella variabile d'ambiente PATH per determinare se JVM è installato globalmente.
+// presenti nella variabile d'ambiente PATH per determinare se Jenvy è installato globalmente.
 //
 // Processo di verifica:
 // 1. Ottiene il percorso assoluto dell'eseguibile corrente usando os.Executable()
@@ -86,8 +86,8 @@ func Init() {
 //
 // Restituisce:
 //
-//	true  - se jvm è nel PATH e accessibile globalmente
-//	false - se jvm non è nel PATH o si è verificato un errore
+//	true  - se jenvy è nel PATH e accessibile globalmente
+//	false - se jenvy non è nel PATH o si è verificato un errore
 //
 // Casi d'uso:
 //   - Validazione durante l'inizializzazione del sistema
@@ -98,7 +98,7 @@ func Init() {
 //   - filepath.Clean() risolve riferimenti relativi (., ..) e separatori multipli
 //   - filepath.SplitList() usa il separatore ; appropriato per Windows PATH
 //   - Gestisce automaticamente i percorsi Windows con backslash
-func isJvmInPath() bool {
+func isJenvyInPath() bool {
 	// Ottieni la directory dell'eseguibile corrente
 	exePath, err := os.Executable()
 	if err != nil {
@@ -121,7 +121,7 @@ func isJvmInPath() bool {
 // createConfigDirectory crea la directory di configurazione .jenvy nel profilo utente Windows.
 //
 // Questa funzione è responsabile della creazione della struttura di directory necessaria
-// per memorizzare i file di configurazione, cache e dati temporanei di JVM su Windows.
+// per memorizzare i file di configurazione, cache e dati temporanei di Jenvy su Windows.
 //
 // Struttura creata:
 //
@@ -170,7 +170,7 @@ func createConfigDirectory() error {
 // hasExistingConfig verifica l'esistenza di un file di configurazione nella directory Windows.
 //
 // Questa funzione controlla se l'utente ha già un file di configurazione config.json
-// nella directory C:\Users\username\.jenvy, che contiene le impostazioni personalizzate per JVM.
+// nella directory C:\Users\username\.jenvy, che contiene le impostazioni personalizzate per Jenvy.
 //
 // Percorso verificato:
 //
@@ -271,7 +271,7 @@ func hasExistingConfig() bool {
 //   - Supporta caratteri Unicode nei percorsi Windows
 func createDefaultConfig() error {
 	// Definisce la configurazione JSON predefinita con impostazioni ottimali
-	// per un nuovo utente di Java Version Manager su Windows
+	// per un nuovo utente di Jenvy su Windows
 	defaultConfig := `{
   "defaultProvider": "adoptium",
   "downloadPath": "",

@@ -56,11 +56,11 @@ func ResetPrivateConfig() {
 	}
 
 	configPath := filepath.Join(homeDir, ".jenvy", "config.json")
-	jvmDir := filepath.Join(homeDir, ".jenvy")
+	jenvyDir := filepath.Join(homeDir, ".jenvy")
 
 	// Verifica esistenza directory .jenvy
-	if _, err := os.Stat(jvmDir); os.IsNotExist(err) {
-		utils.PrintInfo("JVM configuration directory not found")
+	if _, err := os.Stat(jenvyDir); os.IsNotExist(err) {
+		utils.PrintInfo("Jenvy configuration directory not found")
 		utils.PrintInfo("No private repository configuration exists to reset")
 		return
 	}

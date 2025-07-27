@@ -155,25 +155,25 @@ func TestIsValidJDKDirectory(t *testing.T) {
 	}
 }
 
-// TestGetJVMVersionsDirectory verifica la creazione del percorso directory versioni
-func TestGetJVMVersionsDirectory(t *testing.T) {
-	dir, err := utils.GetJVMVersionsDirectory()
+// TestGetJenvyVersionsDirectory verifica la creazione del percorso directory versioni
+func TestGetJenvyVersionsDirectory(t *testing.T) {
+	dir, err := utils.GetJenvyVersionsDirectory()
 	if err != nil {
-		t.Fatalf("GetJVMVersionsDirectory() failed: %v", err)
+		t.Fatalf("GetJenvyVersionsDirectory() failed: %v", err)
 	}
 
 	if dir == "" {
-		t.Error("GetJVMVersionsDirectory() returned empty string")
+		t.Error("GetJenvyVersionsDirectory() returned empty string")
 	}
 
 	// Verifica che il path contenga .jenvy/versions
 	if !filepath.IsAbs(dir) {
-		t.Error("GetJVMVersionsDirectory() should return absolute path")
+		t.Error("GetJenvyVersionsDirectory() should return absolute path")
 	}
 
 	expectedSuffix := filepath.Join(".jenvy", "versions")
 	if !strings.HasSuffix(dir, expectedSuffix) {
-		t.Errorf("GetJVMVersionsDirectory() = %q, should end with %q", dir, expectedSuffix)
+		t.Errorf("GetJenvyVersionsDirectory() = %q, should end with %q", dir, expectedSuffix)
 	}
 }
 

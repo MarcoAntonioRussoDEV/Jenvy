@@ -25,8 +25,8 @@ import (
 //
 // Utilizzo:
 //
-//	jvm completion                    # Stampa lo script Bash
-//	jvm completion >> ~/.bashrc       # Aggiunge al profilo Bash
+//	jenvy completion                    # Stampa lo script Bash
+//	jenvy completion >> ~/.bashrc       # Aggiunge al profilo Bash
 //	source ~/.bashrc                  # Ricarica il profilo
 //
 // Compatibilità Windows:
@@ -38,21 +38,21 @@ import (
 // Note tecniche:
 //   - Usa grep e sed per parsing output di 'jenvy list'
 //   - Limita risultati a 20 versioni per performance
-//   - Gestisce fallback sicuro se il comando jvm non è disponibile
+//   - Gestisce fallback sicuro se il comando jenvy non è disponibile
 //   - Script autocontenuto senza dipendenze esterne bash-completion
 //
 // Output: Stampa lo script completo su stdout (nessun valore di ritorno)
 func GenerateCompletion() {
 	script := `#!/bin/bash
 
-# Bash completion script for Java Version Manager (jvm)
+# Bash completion script for Jenvy
 # To enable completion, run:
-#   jvm completion >> ~/.bashrc
+#   jenvy completion >> ~/.bashrc
 #   source ~/.bashrc
 # Or install globally:
-#   jvm completion | sudo tee /etc/bash_completion.d/jvm
+#   jenvy completion | sudo tee /etc/bash_completion.d/jenvy
 
-_jvm_completion() {
+_jenvy_completion() {
     local cur prev words cword
     # Fallback initialization for systems without bash-completion
     COMPREPLY=()
@@ -67,15 +67,15 @@ _jvm_completion() {
     
     # Special handling for use and remove commands to complete with installed JDK versions
     if [[ "$prev" == "use" || "$prev" == "u" || "$prev" == "remove" || "$prev" == "rm" ]]; then
-        # Try to get installed JDK versions using jvm list
-        if command -v jvm >/dev/null 2>&1; then
-            local installed_versions=$(jvm list 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
+        # Try to get installed JDK versions using jenvy list
+        if command -v jenvy >/dev/null 2>&1; then
+            local installed_versions=$(jenvy list 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
             if [[ -n "$installed_versions" ]]; then
                 COMPREPLY=($(compgen -W "$installed_versions" -- "$cur"))
                 return 0
             fi
         fi
-        # Fallback to common versions if jvm list is not available
+        # Fallback to common versions if jenvy list is not available
         local common_versions="8 11 17 21 23 24"
         COMPREPLY=($(compgen -W "$common_versions" -- "$cur"))
         return 0
@@ -83,7 +83,7 @@ _jvm_completion() {
     
     # Handle command-specific completions
     case "$prev" in
-        jvm)
+        jenvy)
             COMPREPLY=($(compgen -W "$commands" -- "$cur"))
             return 0
             ;;
@@ -119,9 +119,9 @@ _jvm_completion() {
             if [[ "$cur" == --* ]]; then
                 COMPREPLY=($(compgen -W "--all" -- "$cur"))
             else
-                # Try to get installed JDK versions using jvm list
-                if command -v jvm >/dev/null 2>&1; then
-                    local installed_versions=$(jvm list 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
+                # Try to get installed JDK versions using jenvy list
+                if command -v jenvy >/dev/null 2>&1; then
+                    local installed_versions=$(jenvy list 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
                     if [[ -n "$installed_versions" ]]; then
                         COMPREPLY=($(compgen -W "$installed_versions --all" -- "$cur"))
                     else
@@ -153,8 +153,8 @@ _jvm_completion() {
             ;;
         extract|ex)
             # Complete with available archive versions from ~/.jenvy/versions
-            if command -v jvm >/dev/null 2>&1; then
-                local available_archives=$(jvm extract 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
+            if command -v jenvy >/dev/null 2>&1; then
+                local available_archives=$(jenvy extract 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
                 if [[ -n "$available_archives" ]]; then
                     # Add both full names and short versions for intelligent parsing
                     local short_versions=$(echo "$available_archives" | sed 's/\([0-9][0-9]*\).*/\1/')
@@ -180,7 +180,7 @@ _jvm_completion() {
 }
 
 # Register the completion function
-complete -F _jvm_completion jvm
+complete -F _jenvy_completion jenvy
 `
 	fmt.Print(script)
 }
@@ -193,7 +193,7 @@ complete -F _jvm_completion jvm
 //
 // Caratteristiche del completamento PowerShell:
 // - Integrazione nativa con il sistema di completamento PowerShell
-// - Supporto per tutti i comandi JVM e relativi alias
+// - Supporto per tutti i comandi Jenvy e relativi alias
 // - Completamento dinamico delle versioni JDK installate
 // - Gestione intelligente dei flag e parametri
 // - Fallback robusto in caso di errori
@@ -207,7 +207,7 @@ complete -F _jvm_completion jvm
 //
 // Utilizzo consigliato:
 //
-//	Add-Content $PROFILE -Value (jvm completion powershell)
+//	Add-Content $PROFILE -Value (jenvy completion powershell)
 //	. $PROFILE                       # Ricarica il profilo PowerShell
 //
 // Compatibilità:
@@ -256,9 +256,9 @@ func GeneratePowerShellCompletion() string {
 //
 // Utilizzo suggerito:
 //
-//	jvm completion cmd > jvm-help.bat  # Salva lo script
-//	doskey jvm-help=jvm-help.bat $*    # Crea alias DOS
-//	jvm-help                           # Mostra aiuto completo
+//	jenvy completion cmd > jenvy-help.bat  # Salva lo script
+//	doskey jenvy-help=jenvy-help.bat $*    # Crea alias DOS
+//	jenvy-help                           # Mostra aiuto completo
 //
 // Parametri:
 //
@@ -266,7 +266,7 @@ func GeneratePowerShellCompletion() string {
 //
 // Restituisce:
 //
-//	string - Script batch (.bat) con documentazione completa JVM
+//	string - Script batch (.bat) con documentazione completa Jenvy
 //
 // Compatibilità:
 //   - Tutte le versioni di Windows CMD
@@ -280,7 +280,7 @@ func GenerateCmdCompletion() string {
 // generateBashScript genera lo script di completamento Bash ottimizzato per Windows.
 //
 // Questa funzione interna crea uno script Bash autocontenuto che fornisce
-// completamento intelligente per tutti i comandi JVM senza dipendere da
+// completamento intelligente per tutti i comandi Jenvy senza dipendere da
 // bash-completion o altre librerie esterne.
 //
 // Architettura dello script:
@@ -309,7 +309,7 @@ func GenerateCmdCompletion() string {
 //
 // Restituisce:
 //
-//	string - Script Bash completo con funzione _jvm_completion e registrazione
+//	string - Script Bash completo con funzione _jenvy_completion e registrazione
 //
 // Compatibilità:
 //   - Bash 3.x+ (standard su Git Bash)
@@ -319,8 +319,8 @@ func GenerateCmdCompletion() string {
 func generateBashScript() string {
 	return `#!/bin/bash
 
-# Bash completion script for Java Version Manager (jvm)
-_jvm_completion() {
+# Bash completion script for Jenvy
+_jenvy_completion() {
     local cur prev words cword
     # Fallback initialization for systems without bash-completion
     COMPREPLY=()
@@ -335,15 +335,15 @@ _jvm_completion() {
     
     # Special handling for use and remove commands to complete with installed JDK versions
     if [[ "$prev" == "use" || "$prev" == "u" || "$prev" == "remove" || "$prev" == "rm" ]]; then
-        # Try to get installed JDK versions using jvm list
-        if command -v jvm >/dev/null 2>&1; then
-            local installed_versions=$(jvm list 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
+        # Try to get installed JDK versions using jenvy list
+        if command -v jenvy >/dev/null 2>&1; then
+            local installed_versions=$(jenvy list 2>/dev/null | grep -E "^\s*JDK-[0-9]" | sed 's/.*JDK-\([^[:space:]]*\).*/\1/' | head -20)
             if [[ -n "$installed_versions" ]]; then
                 COMPREPLY=($(compgen -W "$installed_versions" -- "$cur"))
                 return 0
             fi
         fi
-        # Fallback to common versions if jvm list is not available
+        # Fallback to common versions if jenvy list is not available
         local common_versions="8 11 17 21 23 24"
         COMPREPLY=($(compgen -W "$common_versions" -- "$cur"))
         return 0
@@ -351,7 +351,7 @@ _jvm_completion() {
     
     # Handle command-specific completions
     case "$prev" in
-        jvm)
+        jenvy)
             COMPREPLY=($(compgen -W "$commands" -- "$cur"))
             return 0
             ;;
@@ -407,7 +407,7 @@ _jvm_completion() {
     esac
 }
 
-complete -F _jvm_completion jvm
+complete -F _jenvy_completion jenvy
 `
 }
 
@@ -415,7 +415,7 @@ complete -F _jvm_completion jvm
 //
 // Questa funzione genera uno script PowerShell che sfrutta appieno il sistema
 // Register-ArgumentCompleter nativo di PowerShell per fornire completamento
-// intelligente e contestuale per tutti i comandi JVM.
+// intelligente e contestuale per tutti i comandi Jenvy.
 //
 // Architettura dello script PowerShell:
 // 1. **Registrazione native completer**: Usa Register-ArgumentCompleter API
@@ -454,12 +454,12 @@ complete -F _jvm_completion jvm
 // Requisiti PowerShell:
 //   - PowerShell 3.0+ (Register-ArgumentCompleter introdotto in 3.0)
 //   - Execution Policy che permette script locali
-//   - Accesso al comando jvm nel PATH
+//   - Accesso al comando jenvy nel PATH
 func generatePowerShellScript() string {
-	return `# PowerShell completion script for Java Version Manager (jvm)
-# Add this to your PowerShell profile: Add-Content $PROFILE -Value (jvm completion powershell)
+	return `# PowerShell completion script for Jenvy
+# Add this to your PowerShell profile: Add-Content $PROFILE -Value (jenvy completion powershell)
 
-Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
+Register-ArgumentCompleter -Native -CommandName jenvy -ScriptBlock {
     param($commandName, $wordToComplete, $cursorPosition)
     
     $commands = @('remote-list', 'rl', 'download', 'dl', 'extract', 'ex', 'list', 'l', 'use', 'u', 'remove', 'rm', 'init', 'fix-path', 'fp', 'configure-private', 'cp', 'config-show', 'cs', 'config-reset', 'cr', 'completion', 'help', '--help', '-h')
@@ -471,7 +471,7 @@ Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
     $lastWord = $words[-1]
     $secondLastWord = if ($words.Length -gt 1) { $words[-2] } else { '' }
     
-    # Complete main commands after 'jvm'
+    # Complete main commands after 'jenvy'
     if ($words.Length -le 2 -and -not $lastWord.StartsWith('--')) {
         $commands | Where-Object { $_ -like "$lastWord*" }
     }
@@ -483,7 +483,7 @@ Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
     elseif ($secondLastWord -eq 'use' -or $secondLastWord -eq 'u' -or $secondLastWord -eq '--jdk') {
         # Try to get installed versions first
         try {
-            $installedVersions = & jvm list 2>$null | Select-String "JDK-(\d+)" | ForEach-Object { $_.Matches[0].Groups[1].Value }
+            $installedVersions = & jenvy list 2>$null | Select-String "JDK-(\d+)" | ForEach-Object { $_.Matches[0].Groups[1].Value }
             if ($installedVersions) {
                 $installedVersions | Where-Object { $_ -like "$lastWord*" }
             } else {
@@ -500,7 +500,7 @@ Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
         } else {
             # Try to get installed versions first
             try {
-                $installedVersions = & jvm list 2>$null | Select-String "JDK-(\d+)" | ForEach-Object { $_.Matches[0].Groups[1].Value }
+                $installedVersions = & jenvy list 2>$null | Select-String "JDK-(\d+)" | ForEach-Object { $_.Matches[0].Groups[1].Value }
                 if ($installedVersions) {
                     ($installedVersions + @('--all')) | Where-Object { $_ -like "$lastWord*" }
                 } else {
@@ -527,11 +527,11 @@ Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
 //
 // Poiché CMD non supporta completamento automatico avanzato, questa funzione
 // genera uno script batch (.bat) che serve come sistema di aiuto e riferimento
-// rapido per tutti i comandi JVM disponibili.
+// rapido per tutti i comandi Jenvy disponibili.
 //
 // Struttura dello script batch generato:
 // 1. **Header informativo**: Spiegazione uso e scopo dello script
-// 2. **Controllo parametri**: Verifica se chiamato con "jvm" come parametro
+// 2. **Controllo parametri**: Verifica se chiamato con "jenvy" come parametro
 // 3. **Lista comandi completa**: Tutti i comandi con alias e sintassi
 // 4. **Esempi pratici**: Uso comune di ogni comando
 // 5. **Riferimenti rapidi**: Provider, versioni e flag disponibili
@@ -562,7 +562,7 @@ Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
 //
 // Restituisce:
 //
-//	string - Script batch completo con documentazione JVM
+//	string - Script batch completo con documentazione Jenvy
 //
 // Compatibilità:
 //   - Tutti le versioni Windows con CMD
@@ -571,10 +571,10 @@ Register-ArgumentCompleter -Native -CommandName jvm -ScriptBlock {
 //   - Sistemi senza PowerShell o Bash
 func generateCmdScript() string {
 	return `@echo off
-REM CMD completion script for Java Version Manager (jvm)
+REM CMD completion script for Jenvy
 REM This provides basic command suggestions for CMD
 
-if "%1"=="jvm" (
+if "%1"=="jenvy" (
     echo Available commands:
     echo   remote-list ^(rl^)     - List available JDK versions from providers
     echo   download ^(dl^)        - Download and install a JDK version
@@ -708,7 +708,7 @@ func InstallCompletionForAllShells() {
 //
 // Gestione intelligente duplicati:
 //   - Scansione contenuto ~/.bashrc esistente
-//   - Ricerca signature "_jvm_completion" per rilevare installazione precedente
+//   - Ricerca signature "_jenvy_completion" per rilevare installazione precedente
 //   - Skip installazione se già presente (evita duplicazione)
 //   - Permette aggiornamenti manuali se necessario
 //
@@ -752,12 +752,12 @@ func installBashCompletion() error {
 
 	// Controlla se il completamento è già installato
 	if content, err := os.ReadFile(bashrcPath); err == nil {
-		if strings.Contains(string(content), "_jvm_completion") {
+		if strings.Contains(string(content), "_jenvy_completion") {
 			return nil // Già installato
 		}
 	}
 
-	script := "\n# Java Version Manager (jvm) completion\n" + generateBashScript()
+	script := "\n# Jenvy completion\n" + generateBashScript()
 
 	file, err := os.OpenFile(bashrcPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
@@ -793,7 +793,7 @@ func installBashCompletion() error {
 //
 // Processo di installazione:
 // 1. **Localizzazione profilo**: Trova o crea percorso profilo appropriato
-// 2. **Controllo duplicati**: Verifica signature "Register-ArgumentCompleter -Native -CommandName jvm"
+// 2. **Controllo duplicati**: Verifica signature "Register-ArgumentCompleter -Native -CommandName jenvy"
 // 3. **Prevenzione sovrascrittura**: Evita installazioni multiple
 // 4. **Creazione directory**: os.MkdirAll per struttura directory se necessaria
 // 5. **Installazione script**: Appende script PowerShell completo
@@ -859,12 +859,12 @@ func installPowerShellCompletion() error {
 
 	// Controlla se il completamento è già installato
 	if content, err := os.ReadFile(profilePath); err == nil {
-		if strings.Contains(string(content), "Register-ArgumentCompleter -Native -CommandName jvm") {
+		if strings.Contains(string(content), "Register-ArgumentCompleter -Native -CommandName jenvy") {
 			return nil // Già installato
 		}
 	}
 
-	script := "\n# Java Version Manager (jvm) completion\n" + generatePowerShellScript()
+	script := "\n# Jenvy completion\n" + generatePowerShellScript()
 
 	file, err := os.OpenFile(profilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
@@ -893,7 +893,7 @@ func installPowerShellCompletion() error {
 // 5. **Riferimento permanente**: File sempre disponibile per consultazione
 //
 // Contenuto dello script di aiuto:
-//   - Lista completa comandi JVM con alias
+//   - Lista completa comandi Jenvy con alias
 //   - Sintassi dettagliata per ogni comando
 //   - Esempi pratici di utilizzo
 //   - Provider supportati e versioni comuni
@@ -902,12 +902,12 @@ func installPowerShellCompletion() error {
 // Workflow utente suggerito:
 // 1. Installazione automatica crea ~/.jenvy_cmd_help.bat
 // 2. Utente esegue comando doskey suggerito per creare alias
-// 3. Alias "jvm-help" diventa disponibile in tutte le sessioni CMD
-// 4. Utente può consultare aiuto con "jvm-help" quando necessario
+// 3. Alias "jenvy-help" diventa disponibile in tutte le sessioni CMD
+// 4. Utente può consultare aiuto con "jenvy-help" quando necessario
 //
 // Comando alias suggerito:
 //
-//	doskey jvm-help=C:\Users\username\.jenvy_cmd_help.bat jvm $*
+//	doskey jenvy-help=C:\Users\username\.jenvy_cmd_help.bat jenvy $*
 //
 // Vantaggi dell'approccio:
 //   - Soluzione nativa CMD senza dipendenze esterne
@@ -955,7 +955,7 @@ func installCmdCompletion() error {
 
 	// Aggiungi suggerimento per l'alias
 	fmt.Println("� [INFO] For CMD completion, add this alias to your environment:")
-	fmt.Printf("   doskey jvm-help=%s jvm $*\n", cmdHelpPath)
+	fmt.Printf("   doskey jenvy-help=%s jenvy $*\n", cmdHelpPath)
 
 	return nil
 }

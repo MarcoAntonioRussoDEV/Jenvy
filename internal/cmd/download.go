@@ -186,10 +186,10 @@ func shouldPreferVersion(version1, version2 string) bool {
 //
 // Sintassi supportata:
 //
-//	jvm download 17                    # Ultima versione disponibile JDK 17
-//	jvm download 21.0.2                # Versione specifica
-//	jvm download 17 --provider=azul    # Provider specifico
-//	jvm download 21 --output=./jdks    # Directory custom
+//	jenvy download 17                    # Ultima versione disponibile JDK 17
+//	jenvy download 21.0.2                # Versione specifica
+//	jenvy download 17 --provider=azul    # Provider specifico
+//	jenvy download 21 --output=./jdks    # Directory custom
 //
 // Provider supportati:
 //   - **adoptium**: Eclipse Adoptium (default, più popolare)
@@ -241,7 +241,7 @@ func shouldPreferVersion(version1, version2 string) bool {
 //
 // Post-download:
 //   - Mostra percorso JDK installato
-//   - Suggerisce comandi successivi (jvm use, jvm list)
+//   - Suggerisce comandi successivi (jenvy use, jenvy list)
 //   - Fornisce percorso bin/ per aggiunta a PATH
 //   - Opzione rimozione archivio per risparmio spazio
 //
@@ -258,9 +258,9 @@ func DownloadJDK(defaultProvider string) {
 		utils.PrintError("No JDK version specified")
 		utils.PrintInfo("Usage: jenvy download <version> [options]")
 		utils.PrintInfo("Examples:")
-		fmt.Println("  jvm download 17          # Download JDK 17")
-		fmt.Println("  jvm download 21.0.5      # Download specific version")
-		fmt.Println("  jvm download 17 --provider=azul")
+		fmt.Println("  jenvy download 17          # Download JDK 17")
+		fmt.Println("  jenvy download 21.0.5      # Download specific version")
+		fmt.Println("  jenvy download 17 --provider=azul")
 		return
 	}
 
@@ -420,24 +420,24 @@ func DownloadJDK(defaultProvider string) {
 		if err := extractJDKArchive(versionDir, versionOutputDir); err != nil {
 			utils.PrintError(fmt.Sprintf("Extraction failed: %v", err))
 			utils.PrintInfo("You can manually extract later using:")
-			utils.PrintInfo(fmt.Sprintf("  jvm extract %s", versionDir))
+			utils.PrintInfo(fmt.Sprintf("  jenvy extract %s", versionDir))
 		} else {
 			utils.PrintSuccess("JDK extracted successfully!")
 			utils.PrintInfo(fmt.Sprintf("JDK ready at: %s", versionOutputDir))
 			fmt.Println()
 			utils.PrintInfo("To activate this JDK, use:")
-			utils.PrintInfo(fmt.Sprintf("  jvm use %s", versionDir))
+			utils.PrintInfo(fmt.Sprintf("  jenvy use %s", versionDir))
 		}
 	} else {
 		utils.PrintWarning("Archive not extracted. To extract manually, use:")
-		utils.PrintWarning(fmt.Sprintf("  jvm extract %s", versionDir))
+		utils.PrintWarning(fmt.Sprintf("  jenvy extract %s", versionDir))
 	}
 
 	fmt.Println()
 	utils.PrintInfo("Next steps:")
-	utils.PrintInfo("  jvm extract <archive>        # Extract the downloaded archive")
-	utils.PrintInfo("  jvm list                     # View installed JDKs")
-	utils.PrintInfo("  jvm use <version>            # Set JDK as active")
+	utils.PrintInfo("  jenvy extract <archive>        # Extract the downloaded archive")
+	utils.PrintInfo("  jenvy list                     # View installed JDKs")
+	utils.PrintInfo("  jenvy use <version>            # Set JDK as active")
 }
 
 // downloadFile scarica un file da URL con indicatore di progresso e gestione robusta degli errori.
@@ -520,7 +520,7 @@ func downloadFile(url, filepath string) error {
 	}
 
 	// Set user agent
-	req.Header.Set("User-Agent", "JVM-Manager/1.0")
+	req.Header.Set("User-Agent", "Jenvy-Manager/1.0")
 
 	// Send request
 	resp, err := client.Do(req)
@@ -597,7 +597,7 @@ func downloadFile(url, filepath string) error {
 
 // getDefaultDownloadDir determina e restituisce la directory di download predefinita per JDK su Windows.
 //
-// Questa funzione costruisce il percorso standardizzato dove JVM organizza tutti i JDK scaricati,
+// Questa funzione costruisce il percorso standardizzato dove Jenvy organizza tutti i JDK scaricati,
 // seguendo le convenzioni di directory utente Windows per una gestione ordinata delle installazioni.
 //
 // Struttura directory predefinita:
@@ -651,7 +651,7 @@ func downloadFile(url, filepath string) error {
 //	}
 //	// downloadDir = "C:\Users\Marco\.jenvy\versions"
 //
-// Integrazione con JVM:
+// Integrazione con Jenvy:
 //   - Usata da comando download per destinazione automatica
 //   - Utilizzata da comando list per enumerazione JDK installati
 //   - Riferimento per comando use nella selezione versioni
@@ -662,8 +662,8 @@ func getDefaultDownloadDir() (string, error) {
 		return "", fmt.Errorf("getting current user: %w", err)
 	}
 
-	jvmDir := filepath.Join(currentUser.HomeDir, ".jenvy", "versions")
-	return jvmDir, nil
+	jenvyDir := filepath.Join(currentUser.HomeDir, ".jenvy", "versions")
+	return jenvyDir, nil
 }
 
 // findAdoptiumDownload ricerca e seleziona il miglior download JDK da releases Eclipse Adoptium.

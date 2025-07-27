@@ -15,7 +15,7 @@ import (
 
 // UseJDK attiva una versione specifica di JDK come JAVA_HOME di sistema su Windows.
 //
-// Questa è la funzione principale del comando "jvm use" che gestisce l'intero processo
+// Questa è la funzione principale del comando "jenvy use" che gestisce l'intero processo
 // di selezione e attivazione di una versione JDK installata, inclusa la gestione
 // dei privilegi amministratore richiesti per modificare le variabili d'ambiente di sistema.
 //
@@ -59,9 +59,9 @@ import (
 //
 // Esempio di utilizzo:
 //
-//	jvm use 17        → Attiva JDK 17 (cerca JDK-17.x.x)
-//	jvm use 17.0.5    → Attiva JDK 17.0.5 specifico
-//	jvm u 21          → Forma breve per attivare JDK 21
+//	jenvy use 17        → Attiva JDK 17 (cerca JDK-17.x.x)
+//	jenvy use 17.0.5    → Attiva JDK 17.0.5 specifico
+//	jenvy u 21          → Forma breve per attivare JDK 21
 //
 // Output tipico:
 //
@@ -73,7 +73,7 @@ import (
 //
 // Scenari di errore:
 //   - Privilegi insufficienti: Guida per esecuzione come amministratore
-//   - JDK non trovato: Suggerisce "jvm list" per vedere JDK disponibili
+//   - JDK non trovato: Suggerisce "jenvy list" per vedere JDK disponibili
 //   - Directory JDK corrotta: Messaggio di errore con path problematico
 //   - Errori registro: Consigli troubleshooting per problemi Windows
 func UseJDK() {
@@ -88,16 +88,16 @@ func UseJDK() {
 	version := os.Args[2]
 
 	// Prima di tutto, verifichiamo se ci sono JDK installati
-	versionsDir, err := utils.GetJVMVersionsDirectory()
+	versionsDir, err := utils.GetJenvyVersionsDirectory()
 	if err != nil {
-		utils.PrintError(fmt.Sprintf("Failed to access JVM directory: %v", err))
+		utils.PrintError(fmt.Sprintf("Failed to access Jenvy directory: %v", err))
 		return
 	}
 
 	// Controlla se la directory versions esiste e contiene JDK
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
-		utils.PrintError("JVM versions directory not found or inaccessible")
+		utils.PrintError("Jenvy versions directory not found or inaccessible")
 		utils.PrintInfo("No JDKs appear to be installed yet")
 		utils.PrintInfo(fmt.Sprintf("Use 'jenvy download %s' to download your first JDK", version))
 		return
@@ -134,8 +134,8 @@ func UseJDK() {
 			utils.PrintError(fmt.Sprintf("Multiple JDK versions match '%s'", version))
 			utils.PrintInfo("Please be more specific with the version number")
 			utils.PrintInfo("Example: use 'jenvy use 17.0.5' instead of 'jenvy use 17'")
-		} else if strings.Contains(err.Error(), "failed to get JVM directory") {
-			utils.PrintError("Unable to access JVM installation directory")
+		} else if strings.Contains(err.Error(), "failed to get Jenvy directory") {
+			utils.PrintError("Unable to access Jenvy installation directory")
 			utils.PrintInfo("Make sure you have proper permissions and the .jenvy directory exists")
 		} else {
 			utils.PrintError(fmt.Sprintf("Failed to locate JDK version %s: %v", version, err))
@@ -147,7 +147,7 @@ func UseJDK() {
 	if !utils.IsValidJDKDirectory(jdkPath) {
 		utils.PrintError(fmt.Sprintf("Invalid or corrupted JDK directory: %s", jdkPath))
 		utils.PrintInfo("This JDK installation appears to be incomplete or damaged")
-		utils.PrintInfo(fmt.Sprintf("Try downloading it again with: jvm download %s", version))
+		utils.PrintInfo(fmt.Sprintf("Try downloading it again with: jenvy download %s", version))
 		return
 	}
 
@@ -192,12 +192,12 @@ func UseJDK() {
 
 // requestAdminPrivileges richiede automaticamente privilegi amministratore tramite UAC Windows.
 //
-// Questa funzione gestisce l'elevazione dei privilegi quando il comando "jvm use"
+// Questa funzione gestisce l'elevazione dei privilegi quando il comando "jenvy use"
 // necessita di modificare le variabili d'ambiente di sistema. Utilizza l'API Windows
 // ShellExecute con il verbo "runas" per attivare il dialogo UAC (User Account Control).
 //
 // Meccanismo elevazione UAC:
-// 1. **Rilevamento eseguibile**: Ottiene il path dell'eseguibile JVM corrente
+// 1. **Rilevamento eseguibile**: Ottiene il path dell'eseguibile Jenvy corrente
 // 2. **Preparazione argomenti**: Ricostruisce tutti gli argomenti della command line
 // 3. **ShellExecute "runas"**: Invoca Windows Shell con richiesta privilegi admin
 // 4. **Terminazione processo**: Il processo corrente termina, quello elevato continua
@@ -233,7 +233,7 @@ func UseJDK() {
 //   - Se cancellato: L'utente ha rifiutato l'elevazione nel dialogo UAC
 //
 // Scenari di utilizzo:
-//   - Utente standard che esegue "jvm use"
+//   - Utente standard che esegue "jenvy use"
 //   - Modifica variabili ambiente sistema richiede privilegi admin
 //   - Alternativa a esecuzione manuale "Run as Administrator"
 //
@@ -520,13 +520,13 @@ func ensureJavaHomeInPath() error {
 // showAvailableJDKs mostra una lista delle installazioni JDK disponibili nel sistema.
 //
 // Questa funzione è una utility di supporto che enumera tutte le versioni JDK
-// installate nella directory standard JVM e le presenta in formato user-friendly.
+// installate nella directory standard Jenvy e le presenta in formato user-friendly.
 // Viene utilizzata quando l'utente non specifica una versione o quando si verificano
 // errori di ricerca per guidare l'utente nelle opzioni disponibili.
 //
 // Processo di enumerazione:
 // 1. **Rilevamento directory home**: Ottiene directory utente corrente
-// 2. **Costruzione path**: Costruisce path alla directory versions di JVM
+// 2. **Costruzione path**: Costruisce path alla directory versions di Jenvy
 // 3. **Lettura directory**: Enumera tutte le subdirectory presenti
 // 4. **Filtraggio JDK**: Identifica solo directory con prefisso "JDK-"
 // 5. **Validazione**: Verifica che ogni directory sia un JDK valido
@@ -555,7 +555,7 @@ func ensureJavaHomeInPath() error {
 //
 // Parametri:
 //
-//	Nessuno (opera su directory standard JVM)
+//	Nessuno (opera su directory standard Jenvy)
 //
 // Output tipico:
 //
@@ -572,16 +572,16 @@ func ensureJavaHomeInPath() error {
 // Utilizzo nei comandi:
 //   - Automaticamente mostrata in UseJDK() se mancano argomenti
 //   - Suggerita in messaggi di errore per guidare l'utente
-//   - Helper per comando "jvm list" per overview installazioni
+//   - Helper per comando "jenvy list" per overview installazioni
 //
 // Integrazione con validazione:
 //   - Usa isValidJDKDirectory() per controllo qualità
 //   - Evita di mostrare installazioni corrotte all'utente
 //   - Garantisce che versioni mostrate siano effettivamente utilizzabili
 func showAvailableJDKs() {
-	versionsDir, err := utils.GetJVMVersionsDirectory()
+	versionsDir, err := utils.GetJenvyVersionsDirectory()
 	if err != nil {
-		utils.PrintError(fmt.Sprintf("Failed to get JVM directory: %v", err))
+		utils.PrintError(fmt.Sprintf("Failed to get Jenvy directory: %v", err))
 		return
 	}
 
@@ -685,9 +685,9 @@ func testJavaInstallation(jdkPath string) {
 	fmt.Printf("Java location: %s\n", javaExe)
 }
 
-// InitializeJVMEnvironment configura l'ambiente iniziale per JVM durante l'installazione.
+// InitializeJenvyEnvironment configura l'ambiente iniziale per Jenvy durante l'installazione.
 //
-// Questa funzione gestisce il setup iniziale dell'ambiente JVM quando il tool viene
+// Questa funzione gestisce il setup iniziale dell'ambiente Jenvy quando il tool viene
 // installato per la prima volta, preparando le variabili d'ambiente e i percorsi
 // necessari per il corretto funzionamento del sistema di gestione versioni Java.
 //
@@ -699,16 +699,16 @@ func testJavaInstallation(jdkPath string) {
 //
 // Gestione privilegi amministratore:
 //   - **Con privilegi**: Setup completo variabili d'ambiente sistema
-//   - **Senza privilegi**: Avvisa che "jvm use" richiederà elevazione UAC
+//   - **Senza privilegi**: Avvisa che "jenvy use" richiederà elevazione UAC
 //   - **Messaggio informativo**: Spiega implicazioni e alternative
 //
 // Setup PATH sistema:
 //   - **Preparazione**: Assicura che PATH sia configurato per %JAVA_HOME%\bin
-//   - **Non destructive**: Non modifica JAVA_HOME fino a primo "jvm use"
+//   - **Non destructive**: Non modifica JAVA_HOME fino a primo "jenvy use"
 //   - **Reversibile**: Setup può essere facilmente annullato se necessario
 //
 // Scenari di utilizzo:
-//   - **Prima installazione**: Setup ambiente quando JVM installato
+//   - **Prima installazione**: Setup ambiente quando Jenvy installato
 //   - **Reinstallazione**: Ripristino configurazione dopo problemi
 //   - **Setup automatico**: Parte di processo installazione automatizzata
 //   - **Configurazione manuale**: Chiamata manuale per fix problemi ambiente
@@ -719,15 +719,15 @@ func testJavaInstallation(jdkPath string) {
 //
 // Output con privilegi admin:
 //
-//	🔧 Setting up JVM environment variables...
-//	[SUCCESS] JVM environment initialized
+//	🔧 Setting up Jenvy environment variables...
+//	[SUCCESS] Jenvy environment initialized
 //	[INFO] Use 'jenvy use <version>' to set your active JDK
 //
 // Output senza privilegi admin:
 //
-//	🔧 Setting up JVM environment variables...
+//	🔧 Setting up Jenvy environment variables...
 //	[WARNING] For system-wide environment variables, run as Administrator
-//	[INFO] You can still use JVM, but 'jenvy use' will require Administrator privileges
+//	[INFO] You can still use Jenvy, but 'jenvy use' will require Administrator privileges
 //	[INFO] Use 'jenvy use <version>' to set your active JDK
 //
 // Messaggi di errore possibili:
@@ -744,13 +744,13 @@ func testJavaInstallation(jdkPath string) {
 //   - Non richiede JDK già installati per funzionare
 //   - Prepara solo l'ambiente, non installa JDK
 //   - Idempotente: sicuro chiamare multiple volte
-func InitializeJVMEnvironment() {
-	fmt.Println("🔧 Setting up JVM environment variables...")
+func InitializeJenvyEnvironment() {
+	fmt.Println("🔧 Setting up Jenvy environment variables...")
 
 	// Check if running as administrator
 	if !isRunningAsAdmin() {
 		utils.PrintWarning("For system-wide environment variables, run as Administrator")
-		utils.PrintInfo("You can still use JVM, but 'jenvy use' will require Administrator privileges")
+		utils.PrintInfo("You can still use Jenvy, but 'jenvy use' will require Administrator privileges")
 	} else {
 		// Ensure %JAVA_HOME%\\bin is in PATH (will be set when a JDK is selected)
 		err := ensureJavaHomeInPath()
@@ -758,7 +758,7 @@ func InitializeJVMEnvironment() {
 			utils.PrintError(fmt.Sprintf("Failed to initialize PATH: %v", err))
 			utils.PrintInfo("You may need to manually add %JAVA_HOME%\\bin to your PATH")
 		} else {
-			utils.PrintSuccess("JVM environment initialized")
+			utils.PrintSuccess("Jenvy environment initialized")
 		}
 	}
 
@@ -784,7 +784,7 @@ func InitializeJVMEnvironment() {
 //	- **Affidabilità**: Controllo diretto sui permessi reali necessari
 //
 // Vantaggi di questo approccio:
-//   - **Test reale**: Verifica esattamente i permessi che servono per operazioni JVM
+//   - **Test reale**: Verifica esattamente i permessi che servono per operazioni Jenvy
 //   - **Affidabile**: Non dipende da API che potrebbero cambiare
 //   - **Specifico**: Testa accesso alla specifica risorsa che useremo
 //   - **Immediato**: Fallisce velocemente se privilegi insufficienti
