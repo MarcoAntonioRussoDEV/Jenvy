@@ -155,12 +155,6 @@ Path: `%USERPROFILE%\.jenvy\config.json`
 }
 ```
 
-#### Environment Variables
-
-```bash
-set JENVY_PRIVATE_ENDPOINT=https://repository.company.com/api/jdk
-set JENVY_PRIVATE_TOKEN=your-auth-token
-```
 
 ### Private Repository API Structure
 
