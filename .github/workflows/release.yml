@@ -61,20 +61,37 @@ jobs:
                   cp README.md build/dist/README.txt
 
             - name: 🏗️ Setup Inno Setup
-              uses: crazy-max/ghaction-setup-innosetup@v2
-              with:
-                  version: "6.4.3"
+              shell: bash
+              run: |
+                  echo "📥 Downloading and installing Inno Setup..."
+                  
+                  # Download Inno Setup installer
+                  curl -L -o innosetup.exe "https://files.jrsoftware.org/is/6/innosetup-6.4.3.exe"
+                  
+                  # Install Inno Setup silently
+                  ./innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
+                  
+                  # Wait for installation to complete
+                  sleep 30
+                  
+                  # Add to PATH
+                  echo "/c/Program Files (x86)/Inno Setup 6" >> $GITHUB_PATH
+                  
+                  # Verify installation
+                  ls -la "/c/Program Files (x86)/Inno Setup 6/" || echo "Directory not found"
 
             - name: ✅ Verify Inno Setup Installation
               shell: bash
               run: |
                   echo "🔍 Verifying Inno Setup installation..."
-                  iscc_path=$(which iscc || echo "")
-                  if [ -n "$iscc_path" ]; then
-                      echo "✅ Inno Setup Compiler found at: $iscc_path"
-                      iscc | head -5
+                  
+                  # Check if ISCC.exe exists
+                  ISCC_PATH="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
+                  if [ -f "$ISCC_PATH" ]; then
+                      echo "✅ Inno Setup Compiler found at: $ISCC_PATH"
+                      "$ISCC_PATH" | head -5 || echo "ISCC executed successfully"
                   else
-                      echo "❌ Inno Setup Compiler not found in PATH"
+                      echo "❌ Inno Setup Compiler not found at expected location"
                       echo "📁 Searching for ISCC.exe..."
                       find "/c/Program Files" -name "ISCC.exe" 2>/dev/null || echo "Not found in Program Files"
                       exit 1
@@ -93,14 +110,16 @@ jobs:
                   # Verify version was updated
                   grep "MyAppVersion" build/installer/setup.iss
 
-                  # Compile installer using iscc from PATH (more reliable)
+                  # Compile installer using direct path to ISCC.exe
                   echo "🔨 Compiling installer..."
                   cd build/installer
-                  if command -v iscc >/dev/null 2>&1; then
-                      iscc setup.iss
+                  
+                  ISCC_PATH="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
+                  if [ -f "$ISCC_PATH" ]; then
+                      "$ISCC_PATH" setup.iss
                   else
-                      # Fallback to full path
-                      "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" setup.iss
+                      echo "❌ ISCC.exe not found at expected location"
+                      exit 1
                   fi
 
                   # Verify installer was created
