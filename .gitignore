@@ -1,2 +1,18 @@
 
-JavaVersionManager.rar
+# Build output
+build/dist/
+*.exe
+*.msi
+
+# IDE
+.vscode/
+launch.json
+
+# Design files (keep source files, ignore exports)
+assets/images/jenvy.psd
+assets/images/jenvy.svg
+assets/icons/jenvy.png
+
+# Temporary files
+*.tmp
+*.log
