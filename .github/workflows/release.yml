@@ -61,17 +61,24 @@ jobs:
                   cp README.md build/dist/README.txt
 
             - name: 🏗️ Setup Inno Setup
+              uses: crazy-max/ghaction-setup-innosetup@v3
+              with:
+                  version: "6.4.3"
+
+            - name: ✅ Verify Inno Setup Installation
               shell: bash
               run: |
-                  # Download and install Inno Setup
-                  curl -L -o innosetup.exe "https://files.jrsoftware.org/is/6/innosetup-6.4.3.exe"
-                  ./innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
-
-                  # Wait for installation to complete
-                  sleep 30
-
-                  # Verify installation
-                  ls -la "/c/Program Files (x86)/Inno Setup 6/"
+                  echo "🔍 Verifying Inno Setup installation..."
+                  iscc_path=$(which iscc || echo "")
+                  if [ -n "$iscc_path" ]; then
+                      echo "✅ Inno Setup Compiler found at: $iscc_path"
+                      iscc | head -5
+                  else
+                      echo "❌ Inno Setup Compiler not found in PATH"
+                      echo "📁 Searching for ISCC.exe..."
+                      find "/c/Program Files" -name "ISCC.exe" 2>/dev/null || echo "Not found in Program Files"
+                      exit 1
+                  fi
 
             - name: 📦 Build Installer
               shell: bash
@@ -80,13 +87,24 @@ jobs:
                   mkdir -p release
 
                   # Update setup.iss with current version
+                  echo "🔧 Updating setup.iss with version: $VERSION"
                   sed -i "s/#define MyAppVersion \".*\"/#define MyAppVersion \"$VERSION\"/" build/installer/setup.iss
 
-                  # Compile installer
+                  # Verify version was updated
+                  grep "MyAppVersion" build/installer/setup.iss
+
+                  # Compile installer using iscc from PATH (more reliable)
+                  echo "🔨 Compiling installer..."
                   cd build/installer
-                  "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" setup.iss
+                  if command -v iscc >/dev/null 2>&1; then
+                      iscc setup.iss
+                  else
+                      # Fallback to full path
+                      "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" setup.iss
+                  fi
 
                   # Verify installer was created
+                  echo "✅ Installer build completed!"
                   ls -la ../../release/
 
             - name: ✅ Verify Build Artifacts
