@@ -61,7 +61,7 @@ jobs:
                   cp README.md build/dist/README.txt
 
             - name: 🏗️ Setup Inno Setup
-              uses: crazy-max/ghaction-setup-innosetup@v3
+              uses: crazy-max/ghaction-setup-innosetup@v2
               with:
                   version: "6.4.3"
 
