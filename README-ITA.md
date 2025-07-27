@@ -2,11 +2,9 @@
 
 # Jenvy - Developer Kit Manager
 
-<div style="display: flex; align-items: center">
 <img src="assets/icons/jenvy_white.svg" alt="logo" height="400" />
-<strong>Una soluzione professionale per la gestione centralizzata delle distribuzioni OpenJDK
-</strong>
-</div>
+
+### Una soluzione professionale per la gestione centralizzata delle distribuzioni OpenJDK
 
 ---
 
