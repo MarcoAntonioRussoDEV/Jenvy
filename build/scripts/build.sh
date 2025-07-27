@@ -12,7 +12,7 @@ echo "==============================================="
 
 echo "► Running tests..."
 # Esegui i test dalla directory root del progetto
-if (cd "$PROJECT_ROOT" && go test ./test/); then
+if (cd "$PROJECT_ROOT" && go test "$PROJECT_ROOT/test/"); then
     echo "✅ Tutti i test sono passati"
 else
     echo "❌ Test falliti! Build interrotto."
@@ -22,8 +22,17 @@ fi
 
 echo ""
 echo "► Building jenvy.exe..."
-if (cd "$PROJECT_ROOT" && go build -o build/dist/jenvy.exe ./main.go); then
-    echo "✅ jenvy.exe compilato con successo"
+
+# Version info for the executable
+VERSION="1.0.0"
+BUILD_DATE=$(date -u +"%Y-%m-%d")
+GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+# Build with version information embedded in the binary
+if (cd "$PROJECT_ROOT" && go build \
+    -ldflags "-X main.Version=$VERSION -X main.BuildDate=$BUILD_DATE -X main.GitCommit=$GIT_COMMIT" \
+    -o build/dist/jenvy.exe ./main.go); then
+    echo "✅ jenvy.exe compilato con successo (v$VERSION)"
 else
     echo "❌ Build fallito: go build ha restituito errore $?"
     exit 1
@@ -49,13 +58,13 @@ fi
 
 echo ""
 echo "⏱️ Attendo il rilascio dei file lock..."
-echo "💡 Se hai VS Code aperto con file dalla cartella distribution, chiudilo ora!"
+echo "💡 Se hai VS Code aperto con file dalla cartella build, chiudilo ora!"
 sleep 5
 
 # Remove old installer if exists
-if [ -f "$PROJECT_ROOT/build/dist/jenvy-installer.exe" ]; then
+if [ -f "$PROJECT_ROOT/release/jenvy-installer.exe" ]; then
     echo "🗑️ Rimuovo il vecchio installer..."
-    if rm -f "$PROJECT_ROOT/build/dist/jenvy-installer.exe"; then
+    if rm -f "$PROJECT_ROOT/release/jenvy-installer.exe"; then
         echo "✅ Vecchio installer rimosso"
     else
         echo "⚠️ Non posso rimuovere il vecchio installer (potrebbe essere in uso)"
@@ -128,11 +137,11 @@ else
 fi
 
 echo ""
-echo "🎉 Build completo! Controlla la cartella build/dist/"
+echo "🎉 Build completo! Controlla le cartelle:"
 echo "📦 File generati:"
-echo "   - jenvy.exe (eseguibile principale)"
-echo "   - jenvy-installer.exe (installer)"
+echo "   build/dist/jenvy.exe (eseguibile principale)"
+echo "   release/jenvy-installer.exe (installer)"
 echo ""
 echo "🚀 Esempi di test:"
 echo "   ./build/dist/jenvy.exe remote-list"
-echo "   ./build/dist/jenvy-installer.exe /CONFIGURE_PRIVATE=0"
+echo "   ./release/jenvy-installer.exe /CONFIGURE_PRIVATE=0"

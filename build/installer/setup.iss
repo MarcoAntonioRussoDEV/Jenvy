@@ -1,11 +1,13 @@
+#define MyAppVersion "1.0.0"
+
 [Setup]
 AppName=Jenvy - Developer Kit Manager
-AppVersion=1.0
+AppVersion={#MyAppVersion}
 DefaultDirName={autopf}\Jenvy
 DefaultGroupName=Jenvy - Developer Kit Manager
 DisableProgramGroupPage=yes
-OutputBaseFilename=jenvy-installer
-OutputDir=..\..\build\dist
+OutputBaseFilename=jenvy-installer-{#MyAppVersion}
+OutputDir=..\..\release
 ChangesEnvironment=yes
 PrivilegesRequired=admin
 
@@ -18,7 +20,7 @@ WizardSmallImageFile=..\..\assets\splash\jenvy_splash_small.bmp
 ; /CONFIGURE_PRIVATE=0  - Skip private repository configuration
 
 [Files]
-Source: "..\dist\jenvy.exe";               DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\build\dist\jenvy.exe";               DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\README.md";               DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
@@ -28,6 +30,7 @@ Source: "..\..\README.md";               DestDir: "{app}"; Flags: ignoreversion
 Name: "addtopath"; Description: "Add Jenvy to system PATH"; GroupDescription: "Additional configuration:"
 
 [Run]
+Filename: "{app}\jenvy.exe"; Parameters: "init"; WorkingDir: "{app}"; Flags: runhidden waituntilterminated skipifdoesntexist; Description: "Initialize Jenvy environment"; StatusMsg: "Setting up Jenvy configuration and shell completions..."
 Filename: "notepad.exe"; Parameters: """{app}\README.md"""; Description: "📘 Open README"; Flags: postinstall shellexec unchecked
 
 
@@ -71,20 +74,26 @@ begin
   WelcomePage := CreateOutputMsgPage(
     wpWelcome,
     '☕ Welcome to Jenvy - Developer Kit Manager',
-    'An elegant tool for managing OpenJDK versions',
+    'A professional OpenJDK management solution for Windows',
+    '🌟 Jenvy is an open source project for managing Java Development Kits.' + #13#10 +
+    '📋 GitHub: https://github.com/MarcoAntonioRussoDEV/Jenvy' + #13#10 +
+    '📖 Documentation: Full README with examples and guides' + #13#10 +
+    '💖 Support: GitHub Sponsors, Ko-fi, PayPal donations welcome' + #13#10 + #13#10 +
     '🚀 Key Features:' + #13#10 +
-    '• List JDK from Adoptium, Azul, Liberica' + #13#10 +
-    '• Support for private enterprise repositories' + #13#10 +
-    '• Smart version selection (LTS priority)' + #13#10 +
-    '• CLI interface with formatted tables' + #13#10 +
-    '• Download and manage JDK versions' + #13#10 + #13#10 +
-    '📦 After installation you can use the "jenvy" command from any terminal.' + #13#10 + #13#10 +
-    '🔧 Usage examples:' + #13#10 +
-    '  jenvy remote-list' + #13#10 +
-    '  jenvy download 17' + #13#10 +
-    '  jenvy list' + #13#10 +
-    '  jenvy remote-list --provider=azul' + #13#10 +
-    '  jenvy remote-list --all'
+    '• Multi-provider support (Adoptium, Azul Zulu, BellSoft Liberica)' + #13#10 +
+    '• Private enterprise repository integration' + #13#10 +
+    '• Smart version selection with LTS priority' + #13#10 +
+    '• Automatic JAVA_HOME and PATH management' + #13#10 +
+    '• Shell completions (Bash, PowerShell, CMD)' + #13#10 +
+    '• Professional CLI with formatted tables' + #13#10 + #13#10 +
+    '📦 After installation, Jenvy will be available globally.' + #13#10 +
+    '🔧 The installer will automatically run "jenvy init" to configure your environment.' + #13#10 + #13#10 +
+    '� Quick Start Examples:' + #13#10 +
+    '  jenvy remote-list          # Browse available JDK versions' + #13#10 +
+    '  jenvy download 21          # Download JDK 21 LTS' + #13#10 +
+    '  jenvy use 21              # Set JDK 21 as active' + #13#10 +
+    '  jenvy list                # Show installed versions' + #13#10 +
+    '  jenvy --help              # Full command reference'
   );
 
   // Private repository configuration page (conditional)
@@ -129,9 +138,6 @@ begin
         Log(Format('Added to SYSTEM PATH: %s', [ExpandConstant('{app}')]));
       end;
     end;
-    
-    // Install shell completions for all available shells
-    Exec(ExpandConstant('{app}\jenvy.exe'), 'completion --install-all', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     
     // Configure private repository if requested
     if ConfigurePrivate then

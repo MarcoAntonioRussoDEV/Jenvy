@@ -8,6 +8,13 @@ import (
 	"jenvy/internal/utils"
 )
 
+// Version information - set during build time
+var (
+	Version   = "dev"     // Set via -ldflags during build
+	BuildDate = "unknown" // Set via -ldflags during build
+	GitCommit = "unknown" // Set via -ldflags during build
+)
+
 func main() {
 	if len(os.Args) < 2 {
 		cmd.ShowHelp()
@@ -85,6 +92,9 @@ func main() {
 
 	case "--help", "-h", "help":
 		cmd.ShowHelp()
+
+	case "--version", "-v", "version":
+		cmd.ShowVersionWithInfo(Version, BuildDate, GitCommit)
 
 	default:
 		utils.PrintError(fmt.Sprintf("Unknown command: %s", os.Args[1]))

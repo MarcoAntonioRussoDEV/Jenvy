@@ -7,6 +7,31 @@ import (
 	"jenvy/internal/utils"
 )
 
+// Version information
+const (
+	Version   = "1.0.0"
+	BuildDate = "2025-01-27"
+	GitCommit = "main"
+)
+
+// ShowVersionWithInfo displays version information with custom build data
+func ShowVersionWithInfo(version, buildDate, gitCommit string) {
+	ui.ShowBanner()
+	fmt.Printf("%s %s\n", utils.ColorText("Jenvy", utils.BrightCyan), utils.ColorText("v"+version, utils.BrightGreen))
+	fmt.Printf("%s %s\n", utils.ColorText("Build Date:", utils.BrightYellow), buildDate)
+	fmt.Printf("%s %s\n", utils.ColorText("Git Commit:", utils.BrightYellow), gitCommit)
+	fmt.Printf("%s %s\n", utils.ColorText("License:", utils.BrightYellow), "MIT")
+	fmt.Printf("%s %s\n", utils.ColorText("Repository:", utils.BrightYellow), "https://github.com/MarcoAntonioRussoDEV/Jenvy")
+	fmt.Println("")
+	fmt.Printf("%s Developer Kit Manager for Windows\n", utils.ColorText("🚀", utils.BrightGreen))
+	fmt.Printf("%s Multi-provider OpenJDK management solution\n", utils.ColorText("☕", utils.BrightYellow))
+	fmt.Printf("%s Support: GitHub Sponsors, Ko-fi, PayPal\n", utils.ColorText("💖", utils.BrightMagenta))
+}
+
+func ShowVersion() {
+	ShowVersionWithInfo(Version, BuildDate, GitCommit)
+}
+
 func ShowHelp() {
 	ui.ShowBanner()
 	fmt.Println("Jenvy - Developer Kit Manager helps you explore available OpenJDK releases across providers.")
@@ -62,9 +87,10 @@ func ShowHelp() {
 	fmt.Println("  jenvy config-show (cs)                           # Show current configuration")
 	fmt.Println("  jenvy config-reset (cr)                          # Remove private configuration")
 	fmt.Println("")
-	fmt.Println(utils.SectionText("[HELP] HELP:"))
-	fmt.Println("─────────")
+	fmt.Println(utils.SectionText("[HELP] HELP & VERSION:"))
+	fmt.Println("────────────────")
 	fmt.Println("  jenvy --help, -h, help                   # Show this help message")
+	fmt.Println("  jenvy --version, -v, version             # Show version information")
 	fmt.Println("")
 	fmt.Println(utils.ExamplesText("PRACTICAL EXAMPLES:"))
 	fmt.Println("──────────────────────")
