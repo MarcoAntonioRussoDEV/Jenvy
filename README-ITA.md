@@ -210,37 +210,6 @@ Il sistema richiede che i repository privati espongano un endpoint REST che rest
 | `arch`     | String  | Architettura CPU                              | `x64`, `x32`, `aarch64`                                  |
 | `lts`      | Boolean | Indica se è una versione Long Term Support    | `true`, `false`                                          |
 
-#### Esempio di Implementazione Server
-
-```javascript
-// Esempio endpoint Node.js/Express
-app.get("/api/jdk", authenticateToken, (req, res) => {
-    const jdkVersions = [
-        {
-            version: "11.0.21",
-            download:
-                "https://repository.company.com/private-jdk/openjdk-11.0.21.zip",
-            arch: "x64",
-            lts: true,
-        },
-        // ... altre versioni
-    ];
-
-    res.json(jdkVersions);
-});
-
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-
-    if (!token || !isValidToken(token)) {
-        return res.sendStatus(401);
-    }
-
-    next();
-}
-```
-
 ## Gestione Privilegi Windows
 
 ### Elevazione Automatica UAC
